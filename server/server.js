@@ -25,7 +25,11 @@ app.use(express.json());
 
 // Route handlers
 app.use('/api/auth', authRouter);
+<<<<<<< HEAD
 //app.use('/api/otp',otpRoutes);
+=======
+app.use('/api/otp',otpRoutes);
+>>>>>>> 7c40efa11e7d009c2e7b767070e880b1514980c7
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
