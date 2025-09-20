@@ -160,7 +160,6 @@ Otherwise, return JSON:
         return None, None
 
 def process_numbered_response(response: str, options: List[str]) -> str:
-    """Convert numbered response to actual option text"""
     try:
         choice_num = int(response.strip())
         if 1 <= choice_num <= len(options):
@@ -246,7 +245,7 @@ Make all recommendations specific, actionable, and realistic. Include actual num
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     global conversation_history, analyzer
-    
+    print("hii")
     try:
         # Add user message to conversation
         user_message = {
@@ -275,7 +274,8 @@ Keep it concise and professional."""
 
             # Get first strategic question
             question, options = analyzer.get_next_essential_question()
-            
+            analyzer.conversation_count += 1
+
             if question and options:
                 analyzer.question_count += 1
                 full_response = f"{initial_response}\n\n{question}"
@@ -346,7 +346,7 @@ Keep it concise and professional."""
             else:
                 # Ask next strategic question
                 question, options = analyzer.get_next_essential_question()
-                
+                analyzer.conversation_count += 1
                 if question and options:
                     analyzer.question_count += 1
                     conversation_history.append({
@@ -381,6 +381,7 @@ Keep it concise and professional."""
         logging.error(f"Error in /chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/")
 async def root():
     return {"message": "Optimized Business Setup Chatbot API", "version": "3.0.0"}
@@ -391,6 +392,7 @@ async def reset_conversation():
     conversation_history = []
     analyzer = None
     return {"message": "Conversation reset successfully"}
+
 
 if __name__ == "__main__":
     import uvicorn

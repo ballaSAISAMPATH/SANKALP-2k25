@@ -22,6 +22,8 @@ import { useAuthInitialize } from './utilities/hooks/useAuthInitialize';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ChangePassword from './pages/auth/ChangePassword';
 import AdminDashBoard from './pages/AdminPages/AdminDashBoard';
+import Development from './pages/UserPages/Development';
+
 import BusinessAnalysis from './pages/UserPages/BusinessAnalysis';
 import Developer from './pages/UserPages/Developer';
 import FunctionalRequirements from './pages/UserPages/FunctionalRequirements';
@@ -60,6 +62,7 @@ const App = () => {
             <Route path='validator' element={<Validator/>} />
             <Route path='profile' element={<UserProfile/>} />
             <Route path='set-new-password' element={<SetNewPassword/>} />
+            <Route path='development' element={<Development/>} />
             </Route>
             <Route path='/admin' element={<AdminLayout/>}>
               <Route path='dashboard' element={<AdminDashBoard/>} />

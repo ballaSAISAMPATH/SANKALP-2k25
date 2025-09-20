@@ -5,11 +5,13 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Import your routes and model
-const otpRoutes = require('./routes/otp-routes');
+const PORT = process.env.PORT || 5000; 
+const otpRoutes = require('./routes/otp-routes')
 const authRouter = require('./routes/auth-routes');
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN, 
+  credentials: true,             
+}));
 const aiRoutes = require("./routes/ai_routes");
 const Prompt = require('./models/Prompt'); // Ensure this path is correct
 
@@ -23,29 +25,17 @@ app.use(express.json());
 
 // Route handlers
 app.use('/api/auth', authRouter);
-app.use('/ai/initial', aiRoutes);
-app.use('/api/otp', otpRoutes);
-
-app.post("/user/storeMongoDb", async (req, res) => {
-    try {
-        console.log("Received request body:", req.body);
-        const { prompt } = req.body;
-        if (!prompt) {
-            return res.status(400).json({ error: "prompt is required." });
-        }
-        const newPrompt = await Prompt.create({ prompt: prompt });        
-        console.log("Successfully stored:", newPrompt);
-        res.status(201).json({ 
-            prompt: "Prompt stored successfully!", 
-            data: newPrompt 
-        });
-    } catch (error) {
-        console.error("Error storing prompt to MongoDB:", error);
-        res.status(500).json({ 
-            error: "Failed to store prompt.",
-            details: error.prompt
-        });
-    }
+app.use('/api/otp',otpRoutes);
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('MongoDB connected');
+  })
+  .catch((err) => {
+    console.error(err);
+  });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 app.get("/user/storeMongoDb", async (req, res) => {
