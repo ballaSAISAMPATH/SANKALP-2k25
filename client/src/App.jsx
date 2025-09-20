@@ -23,11 +23,11 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import ChangePassword from './pages/auth/ChangePassword';
 import AdminDashBoard from './pages/AdminPages/AdminDashBoard';
 import Development from './pages/UserPages/Development';
+import FunctionalRequirements from './pages/UserPages/FunctionalRequirements';
+import NonFunctionalReq from './pages/UserPages/NonFunctionalReq';
 
 import BusinessAnalysis from './pages/UserPages/BusinessAnalysis';
 import Developer from './pages/UserPages/Developer';
-import FunctionalRequirements from './pages/UserPages/FunctionalRequirements';
-import NonFunctionalRequirements from './pages/UserPages/NonFunctionalRequirements';
 import Visualization from './pages/UserPages/Visualization';
 import Validator from './pages/UserPages/Validator';
 const App = () => {
@@ -63,6 +63,8 @@ const App = () => {
             <Route path='profile' element={<UserProfile/>} />
             <Route path='set-new-password' element={<SetNewPassword/>} />
             <Route path='development' element={<Development/>} />
+            <Route path='functional'  element={<FunctionalRequirements/>}/>
+            <Route path='non-functional' element={<NonFunctionalReq/>}/>
             </Route>
             <Route path='/admin' element={<AdminLayout/>}>
               <Route path='dashboard' element={<AdminDashBoard/>} />
