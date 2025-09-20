@@ -1,14 +1,17 @@
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import google.generativeai as genai
 import os
+import json
+import re
 
 app = FastAPI(title="Business Setup Chatbot", version="1.0.0")
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key="AIzaSyDgGTVYFLvYWehsxKrgLDSbxg4VE73jbLs")
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 # Single global conversation history (resets when server restarts)
@@ -26,200 +29,86 @@ class ChatResponse(BaseModel):
 
 class StreamlinedBusinessAnalyzer:
     def __init__(self):
-        # Only essential areas that can't be self-determined
-        self.essential_areas = [
-            "business_model",
-            "target_market", 
-            "revenue_model",
-            "resources_budget",
-            "timeline"
-        ]
-        
-        self.covered_areas = set()
-        self.business_type = None
-        self.question_count = 0
-        
-    def analyze_business_type(self, initial_idea: str) -> str:
-        """Dynamically identify business type from user's idea"""
-        idea_lower = initial_idea.lower()
-        
-        if any(word in idea_lower for word in ["app", "platform", "website", "software", "tech", "digital"]):
-            return "tech_digital"
-        elif any(word in idea_lower for word in ["restaurant", "food", "cafe", "delivery", "catering"]):
-            return "food_service"
-        elif any(word in idea_lower for word in ["store", "shop", "retail", "sell products", "e-commerce"]):
-            return "retail"
-        elif any(word in idea_lower for word in ["service", "consulting", "freelance", "agency"]):
-            return "service_based"
-        elif any(word in idea_lower for word in ["education", "training", "teaching", "course", "coaching"]):
-            return "education"
-        else:
-            return "general"
-    
+        self.conversation_count = 0
+        self.max_questions = 5  # Keep some limit to prevent infinite loops
     def get_next_essential_question(self) -> tuple[Optional[str], Optional[List[str]]]:
         """Get the next essential question with numbered options"""
-        
-        if "business_model" not in self.covered_areas:
-            self.covered_areas.add("business_model")
-            return self.get_business_model_question()
-            
-        elif "target_market" not in self.covered_areas:
-            self.covered_areas.add("target_market")
-            return self.get_target_market_question()
-            
-        elif "revenue_model" not in self.covered_areas:
-            self.covered_areas.add("revenue_model")
-            return self.get_revenue_question()
-            
-        elif "resources_budget" not in self.covered_areas:
-            self.covered_areas.add("resources_budget")
-            return self.get_resources_question()
-            
-        elif "timeline" not in self.covered_areas:
-            self.covered_areas.add("timeline")
-            return self.get_timeline_question()
-        
-        return None, None
-    
-    def get_business_model_question(self) -> tuple[str, List[str]]:
-        """Get business model question based on business type"""
-        
-        questions_and_options = {
-            "tech_digital": (
-                "How will customers access your solution?",
-                [
-                    "Mobile app only",
-                    "Web platform only", 
-                    "Both mobile and web",
-                    "API/Service for businesses"
-                ]
-            ),
-            "food_service": (
-                "What's your service model?",
-                [
-                    "Dine-in restaurant",
-                    "Delivery/takeout only",
-                    "Food truck/mobile",
-                    "Catering services",
-                    "Mixed model"
-                ]
-            ),
-            "retail": (
-                "How will you sell your products?",
-                [
-                    "Physical store only",
-                    "Online store only",
-                    "Both physical and online",
-                    "Marketplace (Amazon/eBay)",
-                    "Wholesale to businesses"
-                ]
-            ),
-            "service_based": (
-                "How will you deliver your service?",
-                [
-                    "At client location",
-                    "Remote/online only",
-                    "At my office/location",
-                    "Mixed approach"
-                ]
-            ),
-            "education": (
-                "What's your teaching format?",
-                [
-                    "Online courses",
-                    "In-person classes",
-                    "One-on-one tutoring",
-                    "Group workshops",
-                    "Mixed format"
-                ]
-            ),
-            "general": (
-                "What's your business model?",
-                [
-                    "Product sales",
-                    "Service provision",
-                    "Digital/online business",
-                    "Subscription model",
-                    "Marketplace/platform"
-                ]
-            )
-        }
-        
-        return questions_and_options.get(self.business_type, questions_and_options["general"])
-    
-    def get_target_market_question(self) -> tuple[str, List[str]]:
-        """Get target market question"""
-        return (
-            "Who is your primary target customer?",
-            [
-                "Individual consumers (B2C)",
-                "Small businesses (1-50 employees)",
-                "Medium businesses (50-500 employees)",
-                "Large enterprises (500+ employees)",
-                "Government/non-profit",
-                "Mixed customer base"
-            ]
-        )
-    
-    def get_revenue_question(self) -> tuple[str, List[str]]:
-        """Get revenue model question"""
-        
-        if self.business_type == "tech_digital":
-            return (
-                "How will you charge customers?",
-                [
-                    "Monthly subscription ($5-50/month)",
-                    "Annual subscription (discount for yearly)",
-                    "One-time purchase/license",
-                    "Freemium (free + premium tiers)",
-                    "Commission/transaction fees",
-                    "Advertisement revenue"
-                ]
-            )
-        else:
-            return (
-                "What's your pricing approach?",
-                [
-                    "Premium pricing (higher than competitors)",
-                    "Competitive pricing (match market rates)",
-                    "Value pricing (lower price, good value)",
-                    "Subscription/recurring revenue",
-                    "Project-based pricing",
-                    "Commission/percentage based"
-                ]
-            )
-    
-    def get_resources_question(self) -> tuple[str, List[str]]:
-        """Get resources/budget question"""
-        return (
-            "What's your startup budget range?",
-            [
-                "Under $1,000 (bootstrap/minimal)",
-                "$1,000 - $10,000 (small investment)",
-                "$10,000 - $50,000 (moderate investment)",
-                "$50,000 - $200,000 (significant investment)",
-                "$200,000+ (major investment/funding needed)",
-                "I need to research and determine costs"
-            ]
-        )
-    
-    def get_timeline_question(self) -> tuple[str, List[str]]:
-        """Get timeline question"""
-        return (
-            "When do you want to launch?",
-            [
-                "Within 1-3 months (quick launch)",
-                "3-6 months (standard timeline)",
-                "6-12 months (thorough preparation)",
-                "1+ years (long-term planning)",
-                "As soon as funding is secured",
-                "When I have more skills/experience"
-            ]
-        )
-    
+        return self.generate_next_question(conversation_history)    
     def is_satisfied(self) -> bool:
-        """Check if all essential questions are covered"""
-        return len(self.covered_areas) >= len(self.essential_areas)
+        """Check if all essential questions are covered using Gemini analysis"""
+        return self.analyze_conversation_completeness(conversation_history)
+    def analyze_conversation_completeness(self, conversation: List[Dict]) -> bool:
+        """Use Gemini to determine if we have enough information for a business plan"""
+        
+        conversation_text = "\n".join([
+            f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
+            for msg in conversation
+        ])
+        
+        completeness_prompt = f"""You are a business consultant. Analyze this conversation to determine if you have enough information to create a comprehensive business plan.
+
+CONVERSATION:
+{conversation_text}
+
+Consider:
+- Do you understand the business concept clearly?
+- Do you know who the customers are?
+- Do you understand how money will be made?
+- Do you know how the business will operate?
+- Do you understand resources/timeline needs?
+
+Respond with ONLY "COMPLETE" or "CONTINUE" - nothing else."""
+
+        response = model.generate_content(completeness_prompt)
+        return "COMPLETE" in response.text.upper()
+    
+    def generate_next_question(self, conversation: List[Dict]) -> tuple[Optional[str], Optional[List[str]]]:
+        """Generate completely dynamic next question based on conversation"""
+        
+        conversation_text = "\n".join([
+            f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
+            for msg in conversation
+        ])
+        
+        question_prompt = f"""You are a business consultant. Based on this conversation, generate the MOST IMPORTANT next question to help create a business plan.
+
+CONVERSATION SO FAR:
+{conversation_text}
+
+Generate ONE specific question with exactly 4-6 multiple choice options that will help you understand:
+- What hasn't been covered yet that's critical for this business
+- The most important missing piece of information
+- Something specific to THEIR business idea, not generic
+
+IMPORTANT: The user will respond with ONLY a number (1-6) corresponding to one of your options. Make sure all options are comprehensive and cover the main possibilities for this question.
+
+Return ONLY this JSON format:
+{{
+    "question": "Your specific question here?",
+    "options": [
+        "Option 1 specific to their business",
+        "Option 2 specific to their business", 
+        "Option 3 specific to their business",
+        "Option 4 specific to their business",
+        "Option 5 (if needed)",
+        "Option 6 (if needed)"
+    ]
+}}"""
+
+        response = model.generate_content(question_prompt)
+        json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+        if json_match:
+            question_data = json.loads(json_match.group())
+            question = question_data.get("question")
+            options = question_data.get("options", [])
+            
+            # Ensure we have valid question and options
+            if not question or not options or len(options) < 3:
+                raise HTTPException(status_code=500, detail="Invalid question format from Gemini")
+                
+            return question, options
+        else:
+            raise HTTPException(status_code=500, detail="Failed to parse question JSON from Gemini")
 
 def format_options_response(question: str, options: List[str]) -> str:
     """Format question with numbered options"""
@@ -233,12 +122,12 @@ def process_numbered_response(response: str, options: List[str]) -> str:
         if 1 <= choice_num <= len(options):
             return options[choice_num - 1]
         else:
-            return response  # Fallback to original response
+            return response
     except ValueError:
-        return response  # Fallback if not a number
+        return response
 
 def generate_final_prompt(conversation: List[Dict]) -> str:
-    """Generate comprehensive business plan prompt"""
+    """Generate comprehensive business plan prompt using Gemini"""
     
     conversation_summary = "\n".join([
         f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
@@ -321,27 +210,29 @@ async def chat_endpoint(request: ChatRequest):
         # Initialize analyzer on first message
         if len(conversation_history) == 1:
             analyzer = StreamlinedBusinessAnalyzer()
-            analyzer.business_type = analyzer.analyze_business_type(request.message)
             
-            # Generate enthusiastic initial response
-            gemini_prompt = f"""You are a business consultant. A user wants to start this business: "{request.message}"
+            # Generate completely dynamic initial response
+            initial_prompt = f"""You are a business consultant. A user wants to start this business: "{request.message}"
 
 Generate an enthusiastic, encouraging response that:
-1. Acknowledges their business idea positively
-2. Mentions you'll ask just a few essential questions to create their business plan
-3. Explains they can respond with just numbers for quick answers
-4. Keep it brief and professional
+1. Acknowledges their specific business idea positively (mention what you understand about it)
+2. Shows genuine interest in their concept
+3. Mentions you'll ask just a few essential questions to create their business plan
+4. Explains they can respond with just numbers for quick answers
+5. Keep it brief and professional
+6. Be specific to their business idea, not generic
 
-Business type detected: {analyzer.business_type}"""
+Generate only the response text, nothing else."""
 
-            response = model.generate_content(gemini_prompt)
-            initial_response = response.text
+            response = model.generate_content(initial_prompt)
+            initial_response = response.text.strip()
             
-            # Get first question
+            # Get first dynamic question
             question, options = analyzer.get_next_essential_question()
+            analyzer.conversation_count += 1
             
             if question and options:
-                full_response = f"{initial_response}\n\n{format_options_response(question, options)}"
+                full_response = f"{initial_response}\n\n{question}"
                 
                 response_message = {
                     "role": "assistant",
@@ -351,7 +242,7 @@ Business type detected: {analyzer.business_type}"""
                 conversation_history.append(response_message)
                 
                 return ChatResponse(
-                    response=full_response,
+                    response=question,
                     satisfied=False,
                     options=options
                 )
@@ -377,19 +268,19 @@ Business type detected: {analyzer.business_type}"""
                             # Update the user message with the processed response
                             conversation_history[-1]["content"] = processed_response
             
-            # Check if satisfied
+            # Check if satisfied using dynamic analysis
             if analyzer.is_satisfied():
                 final_prompt = generate_final_prompt(conversation_history)
                 
                 # Generate final response
-                gemini_final_prompt = """Generate a brief congratulatory message that:
+                final_response_prompt = """Generate a brief congratulatory message that:
 1. Thanks them for providing the essential information
 2. Mentions their business plan is ready to be generated
 3. Explains they can use the provided prompt with any AI assistant
 Keep it encouraging and concise."""
 
-                response = model.generate_content(gemini_final_prompt)
-                final_response = response.text
+                response = model.generate_content(final_response_prompt)
+                final_response = response.text.strip()
                 
                 response_message = {
                     "role": "assistant", 
@@ -405,40 +296,26 @@ Keep it encouraging and concise."""
                 )
             
             else:
-                # Get next question
+                # Get next dynamic question
                 question, options = analyzer.get_next_essential_question()
+                analyzer.conversation_count += 1
                 
                 if question and options:
-                    formatted_question = format_options_response(question, options)
-                    
                     response_message = {
                         "role": "assistant",
-                        "content": formatted_question,
+                        "content": question,
                         "timestamp": datetime.now().isoformat()
                     }
                     conversation_history.append(response_message)
                     
                     return ChatResponse(
-                        response=formatted_question,
+                        response=question,
                         satisfied=False,
                         options=options
                     )
                 else:
-                    # This shouldn't happen but fallback
-                    fallback_response = "Thank you for that information. Let me prepare your business plan now."
-                    
-                    response_message = {
-                        "role": "assistant",
-                        "content": fallback_response,
-                        "timestamp": datetime.now().isoformat()
-                    }
-                    conversation_history.append(response_message)
-                    
-                    return ChatResponse(
-                        response=fallback_response,
-                        satisfied=True,
-                        final_prompt=generate_final_prompt(conversation_history)
-                    )
+                    # No fallback - throw error if question generation fails
+                    raise HTTPException(status_code=500, detail="Failed to generate next question")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
