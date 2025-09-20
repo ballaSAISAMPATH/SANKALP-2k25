@@ -1,0 +1,21 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  refinedPrompt:'',
+};
+
+const chatSlice = createSlice({
+  name: "chat",
+  initialState,
+  reducers: {
+    setRefinedPrompt :(state,action)=>{
+        alert("rgjknrjgk")
+        console.log(action.payload);
+        
+        state.refinedPrompt = action.payload;
+    }
+  },
+});
+
+export const {  setRefinedPrompt } = chatSlice.actions;
+export default chatSlice.reducer;

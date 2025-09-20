@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { SendHorizonal, Bot, Trash2 } from "lucide-react";
 import axios from "axios";
-
+import { setRefinedPrompt } from "@/store/task"; 
+import { useDispatch, useSelector } from "react-redux";
 export default function UserHome() {
+  const dispatch = useDispatch();
+  const {refinedPrompt} = useSelector((state)=>state.task);
   const [messages, setMessages] = useState([
-   
+    {
+  "text": "Hello! I'm your AI Requirements Assistant. I can help you transform your business ideas into clear, actionable requirements. How can I assist you today?",
+  "sender": "ai"
+}
   ]);
   const chatEndRef = useRef(null);
 
@@ -18,12 +24,16 @@ export default function UserHome() {
     event.target[0].value = "";
 
     try {
-      const response = await axios.post("http://localhost:5000/api/ai/chat", {
+      const response = await axios.post("http://localhost:8000/chat", {
         message,
       });
-
+      console.log(response.data);
+      
       // Add AI response to state
-      setMessages(prevMessages => [...prevMessages, { text: response.data.message, sender: 'ai' }]);
+      setMessages(prevMessages => [...prevMessages, { text: response.data.response, sender: 'ai' }]);
+      if(response.data.satisfied){
+        dispatch(setRefinedPrompt(response.data.final_prompt));
+      }
     } catch (error) {
       console.error("Error calling AI API:", error);
       setMessages(prevMessages => [...prevMessages, { text: "Sorry, I'm having trouble connecting right now. Please try again later.", sender: 'ai' }]);
@@ -57,6 +67,7 @@ export default function UserHome() {
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <Bot size={28} className="text-cyan-500" />
           AI Chat
+          
         </h1>
         <button
           className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"

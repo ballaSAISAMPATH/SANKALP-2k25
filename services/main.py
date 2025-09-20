@@ -4,9 +4,19 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import google.generativeai as genai
 import os
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Business Setup Chatbot", version="1.0.0")
-
+origins = [
+    "http://localhost:5173",  # React dev server
+    "http://127.0.0.1:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # allows OPTIONS, GET, POST, etc.
+    allow_headers=["*"],
+)
 # Configure Gemini API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
@@ -310,6 +320,7 @@ async def chat_endpoint(request: ChatRequest):
     global conversation_history, analyzer
     
     try:
+        print(request.message)
         # Add user message to history
         user_message = {
             "role": "user",
