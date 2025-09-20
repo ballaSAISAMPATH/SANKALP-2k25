@@ -18,12 +18,12 @@ export default function UserHome() {
     event.target[0].value = "";
 
     try {
-      const response = await axios.post("http://localhost:5000/api/ai/chat", {
+      const response = await axios.post("http://localhost:8000/chat", {
         message,
       });
 
       // Add AI response to state
-      setMessages(prevMessages => [...prevMessages, { text: response.data.message, sender: 'ai' }]);
+      setMessages(prevMessages => [...prevMessages, { text: response.data.response, sender: 'ai' }]);
     } catch (error) {
       console.error("Error calling AI API:", error);
       setMessages(prevMessages => [...prevMessages, { text: "Sorry, I'm having trouble connecting right now. Please try again later.", sender: 'ai' }]);
