@@ -12,7 +12,7 @@ app.use(cors({
   origin: process.env.CLIENT_ORIGIN, 
   credentials: true,             
 }));
-const aiRoutes = require("./routes/ai_routes");
+//const aiRoutes = require("./routes/ai_routes");
 const Prompt = require('./models/Prompt'); // Ensure this path is correct
 
 // Middleware setup
@@ -25,7 +25,7 @@ app.use(express.json());
 
 // Route handlers
 app.use('/api/auth', authRouter);
-app.use('/api/otp',otpRoutes);
+//app.use('/api/otp',otpRoutes);
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -34,9 +34,6 @@ mongoose
   .catch((err) => {
     console.error(err);
   });
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 app.get("/user/storeMongoDb", async (req, res) => {
     try {
