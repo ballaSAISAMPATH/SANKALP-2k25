@@ -1,15 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Shield, RefreshCw, Zap, Users, Monitor } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  setRefinedPrompt, 
+  setDeveloperOutput, 
+  setFunctionalOutput, 
+  setNonFunctionalOutput,
+  setNonFunctionalRequirements,
+  setNonFunctionalMessages,
+  addNonFunctionalMessage,
+  clearNonFunctional
+} from "../../store/task/index";
 
 const NonFunctionalReq = () => {
-  const [messages, setMessages] = useState([]);
+  const dispatch = useDispatch();
+  const { 
+    refinedPrompt, 
+    developerOutput, 
+    functionalOutput, 
+    nonFunctionalOutput,
+    nonFunctionalRequirements: reduxNonFunctionalReqs,
+    nonFunctionalMessages: reduxMessages 
+  } = useSelector((state) => state.task);
+
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [nonFunctionalRequirements, setNonFunctionalRequirements] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef(null);
-  const {refinedPrompt} = useSelector((state)=>state.task)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -17,18 +34,33 @@ const NonFunctionalReq = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [reduxMessages]);
+
+  // Initialize component with existing data
+  useEffect(() => {
+    if (reduxMessages && reduxMessages.length > 0) {
+      // If we have messages, we're not in initial state
+    }
+    if (refinedPrompt && refinedPrompt !== 'geyhetewery') {
+      setInputMessage(refinedPrompt);
+    }
+    if (reduxNonFunctionalReqs) {
+      setActiveTab('requirements');
+    }
+  }, [refinedPrompt, reduxMessages, reduxNonFunctionalReqs]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: inputMessage, timestamp: new Date() };
-    setMessages(prev => [...prev, userMessage]);
+    
+    // Dispatch to Redux instead of local state
+    dispatch(addNonFunctionalMessage(userMessage));
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch('http://localhost:6888/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: inputMessage })
@@ -38,16 +70,22 @@ const NonFunctionalReq = () => {
 
       const data = await response.json();
       
+      // Save to Redux
+      dispatch(setNonFunctionalOutput(data.response));
+      
       const aiMessage = { 
         role: 'assistant', 
         content: data.response, 
         timestamp: new Date()
       };
       
-      setMessages(prev => [...prev, aiMessage]);
+      dispatch(addNonFunctionalMessage(aiMessage));
       
+      // Save non-functional requirements to Redux
       if (data.non_functional_requirements) {
-        setNonFunctionalRequirements(data.non_functional_requirements);
+        console.log('Saving non-functional requirements to Redux:', data.non_functional_requirements);
+        dispatch(setNonFunctionalRequirements(data.non_functional_requirements));
+        
         if (data.is_initial_analysis) {
           setActiveTab('requirements');
         }
@@ -59,7 +97,7 @@ const NonFunctionalReq = () => {
         timestamp: new Date(),
         isError: true
       };
-      setMessages(prev => [...prev, errorMessage]);
+      dispatch(addNonFunctionalMessage(errorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -67,10 +105,12 @@ const NonFunctionalReq = () => {
 
   const resetConversation = async () => {
     try {
-      await fetch('http://localhost:8000/reset', { method: 'POST' });
-      setMessages([]);
-      setNonFunctionalRequirements(null);
+      await fetch('http://localhost:6000/reset', { method: 'POST' });
+      
+      // Clear Redux state
+      dispatch(clearNonFunctional());
       setActiveTab('chat');
+      setInputMessage('');
     } catch (error) {
       console.error('Failed to reset:', error);
     }
@@ -140,7 +180,7 @@ const NonFunctionalReq = () => {
       <div key={category} className="bg-white border rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Icon className="h-5 w-5 text-blue-600" />
+            <Icon className="h-5 w-5 text-purple-600" />
             <h3 className="font-semibold text-gray-900">{title}</h3>
           </div>
           {requirement.priority_level && (
@@ -189,7 +229,14 @@ const NonFunctionalReq = () => {
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-3">
             <Shield className="h-6 w-6 text-purple-600" />
-            <h1 className="text-xl font-bold text-purple-600">Non-Functional Requirements Analyzer</h1>
+            <div>
+              <h1 className="text-xl font-bold text-purple-600">Non-Functional Requirements Analyzer</h1>
+              {reduxNonFunctionalReqs && (
+                <p className="text-sm text-green-600 mt-1">
+                  ✓ NFR analysis loaded from previous session
+                </p>
+              )}
+            </div>
           </div>
           <button
             onClick={resetConversation}
@@ -211,20 +258,22 @@ const NonFunctionalReq = () => {
               activeTab === 'chat' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600'
             }`}
           >
-            Chat
+            Chat {reduxMessages && reduxMessages.length > 0 && (
+              <span className="ml-1 text-xs">({reduxMessages.length})</span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('requirements')}
-            disabled={!nonFunctionalRequirements}
+            disabled={!reduxNonFunctionalReqs}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'requirements' && nonFunctionalRequirements
+              activeTab === 'requirements' && reduxNonFunctionalReqs
                 ? 'bg-purple-600 text-white'
-                : nonFunctionalRequirements
+                : reduxNonFunctionalReqs
                 ? 'bg-white text-gray-600'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            NFR Analysis {nonFunctionalRequirements && <span className="ml-1 text-xs">✓</span>}
+            NFR Analysis {reduxNonFunctionalReqs && <span className="ml-1 text-xs">✓</span>}
           </button>
         </div>
 
@@ -234,14 +283,19 @@ const NonFunctionalReq = () => {
             <div className="bg-white rounded-lg border h-96 flex flex-col">
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 ? (
+                {(!reduxMessages || reduxMessages.length === 0) ? (
                   <div className="text-center text-gray-500 mt-16">
                     <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p className="mb-2">Analyze Non-Functional Requirements</p>
                     <p className="text-xs text-gray-400">Performance • Security • Scalability • Reliability</p>
+                    {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
+                      <p className="text-xs text-purple-600 mt-2">
+                        Initial prompt available: {refinedPrompt.substring(0, 50)}...
+                      </p>
+                    )}
                   </div>
                 ) : (
-                  messages.map((message, index) => (
+                  reduxMessages.map((message, index) => (
                     <div
                       key={index}
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -285,7 +339,7 @@ const NonFunctionalReq = () => {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    defaultValue={refinedPrompt}
+                    value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your system's quality requirements..."
@@ -304,6 +358,14 @@ const NonFunctionalReq = () => {
                     )}
                   </button>
                 </div>
+                {refinedPrompt && refinedPrompt !== 'geyhetewery' && !inputMessage && (
+                  <button 
+                    onClick={() => setInputMessage(refinedPrompt)}
+                    className="mt-2 text-xs text-purple-600 hover:text-purple-800 underline"
+                  >
+                    Use initial prompt: {refinedPrompt.substring(0, 30)}...
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -311,15 +373,26 @@ const NonFunctionalReq = () => {
           {/* Requirements Section */}
           <div className={`${activeTab !== 'requirements' ? 'hidden lg:block' : ''}`}>
             <div className="bg-white rounded-lg border">
-              {nonFunctionalRequirements ? (
+              {reduxNonFunctionalReqs ? (
                 <div className="h-96 overflow-y-auto p-4 space-y-4">
-                  <h2 className="text-lg font-bold text-gray-900 border-b pb-2">
-                    Non-Functional Requirements
-                  </h2>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h2 className="text-lg font-bold text-gray-900">
+                      Non-Functional Requirements
+                    </h2>
+                    <span className="text-xs text-green-600">✓ Persisted</span>
+                  </div>
                   
-                  {Object.entries(nonFunctionalRequirements).map(([category, requirement]) => 
+                  {Object.entries(reduxNonFunctionalReqs).map(([category, requirement]) => 
                     renderRequirement(category, requirement)
                   )}
+
+                  {/* Debug info */}
+                  <details className="mt-4 text-xs">
+                    <summary className="cursor-pointer text-gray-500">Debug Info</summary>
+                    <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto">
+                      {JSON.stringify(reduxNonFunctionalReqs, null, 2)}
+                    </pre>
+                  </details>
                 </div>
               ) : (
                 <div className="h-96 flex items-center justify-center text-gray-500">
@@ -327,6 +400,14 @@ const NonFunctionalReq = () => {
                     <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p>No NFR analysis generated yet</p>
                     <p className="text-xs text-gray-400 mt-1">Quality attributes will appear here</p>
+                    {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
+                      <button 
+                        onClick={() => setInputMessage(refinedPrompt)}
+                        className="mt-4 px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-colors"
+                      >
+                        Use Initial Prompt
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

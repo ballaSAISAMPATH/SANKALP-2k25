@@ -1,15 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, FileText, RefreshCw } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  setRefinedPrompt, 
+  setDeveloperOutput, 
+  setFunctionalOutput, 
+  setNonFunctionalOutput,
+  setFunctionalRequirements,
+  setFunctionalMessages,
+  addFunctionalMessage,
+  clearFunctional
+} from "../../store/task/index";
 
 const FunctionalRequirements = () => {
-  const [messages, setMessages] = useState([]);
+  const dispatch = useDispatch();
+  const { 
+    refinedPrompt, 
+    developerOutput, 
+    functionalOutput, 
+    nonFunctionalOutput,
+    functionalRequirements: reduxFunctionalReqs,
+    functionalMessages: reduxMessages 
+  } = useSelector((state) => state.task);
+
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [functionalRequirements, setFunctionalRequirements] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef(null);
-  const {refinedPrompt} = useSelector((state)=>state.task)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -17,18 +34,33 @@ const FunctionalRequirements = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [reduxMessages]);
+
+  // Initialize component with existing data
+  useEffect(() => {
+    if (reduxMessages && reduxMessages.length > 0) {
+      // If we have messages, we're not in initial state
+    }
+    if (refinedPrompt && refinedPrompt !== 'geyhetewery') {
+      setInputMessage(refinedPrompt);
+    }
+    if (reduxFunctionalReqs) {
+      setActiveTab('requirements');
+    }
+  }, [refinedPrompt, reduxMessages, reduxFunctionalReqs]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: inputMessage, timestamp: new Date() };
-    setMessages(prev => [...prev, userMessage]);
+    
+    // Dispatch to Redux instead of local state
+    dispatch(addFunctionalMessage(userMessage));
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch('http://localhost:4000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: inputMessage })
@@ -38,16 +70,22 @@ const FunctionalRequirements = () => {
 
       const data = await response.json();
       
+      // Save to Redux
+      dispatch(setFunctionalOutput(data.response));
+      
       const aiMessage = { 
         role: 'assistant', 
         content: data.response, 
         timestamp: new Date()
       };
       
-      setMessages(prev => [...prev, aiMessage]);
+      dispatch(addFunctionalMessage(aiMessage));
       
+      // Save functional requirements to Redux
       if (data.functional_requirements) {
-        setFunctionalRequirements(data.functional_requirements);
+        console.log('Saving functional requirements to Redux:', data.functional_requirements);
+        dispatch(setFunctionalRequirements(data.functional_requirements));
+        
         if (data.is_initial_analysis) {
           setActiveTab('requirements');
         }
@@ -59,7 +97,7 @@ const FunctionalRequirements = () => {
         timestamp: new Date(),
         isError: true
       };
-      setMessages(prev => [...prev, errorMessage]);
+      dispatch(addFunctionalMessage(errorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -67,10 +105,12 @@ const FunctionalRequirements = () => {
 
   const resetConversation = async () => {
     try {
-      await fetch('http://localhost:8000/reset', { method: 'POST' });
-      setMessages([]);
-      setFunctionalRequirements(null);
+      await fetch('http://localhost:4000/reset', { method: 'POST' });
+      
+      // Clear Redux state
+      dispatch(clearFunctional());
       setActiveTab('chat');
+      setInputMessage('');
     } catch (error) {
       console.error('Failed to reset:', error);
     }
@@ -116,7 +156,14 @@ const FunctionalRequirements = () => {
       {/* Header */}
       <div className="bg-white border-b p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <h1 className="text-xl font-bold text-blue-600">Functional Requirements Analyzer</h1>
+          <div>
+            <h1 className="text-xl font-bold text-blue-600">Functional Requirements Analyzer</h1>
+            {reduxFunctionalReqs && (
+              <p className="text-sm text-green-600 mt-1">
+                ✓ Requirements loaded from previous session
+              </p>
+            )}
+          </div>
           <button
             onClick={resetConversation}
             disabled={isLoading}
@@ -137,20 +184,22 @@ const FunctionalRequirements = () => {
               activeTab === 'chat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
             }`}
           >
-            Chat
+            Chat {reduxMessages && reduxMessages.length > 0 && (
+              <span className="ml-1 text-xs">({reduxMessages.length})</span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('requirements')}
-            disabled={!functionalRequirements}
+            disabled={!reduxFunctionalReqs}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'requirements' && functionalRequirements
+              activeTab === 'requirements' && reduxFunctionalReqs
                 ? 'bg-blue-600 text-white'
-                : functionalRequirements
+                : reduxFunctionalReqs
                 ? 'bg-white text-gray-600'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            Requirements {functionalRequirements && <span className="ml-1 text-xs">✓</span>}
+            Requirements {reduxFunctionalReqs && <span className="ml-1 text-xs">✓</span>}
           </button>
         </div>
 
@@ -160,13 +209,18 @@ const FunctionalRequirements = () => {
             <div className="bg-white rounded-lg border h-96 flex flex-col">
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 ? (
+                {(!reduxMessages || reduxMessages.length === 0) ? (
                   <div className="text-center text-gray-500 mt-16">
                     <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p>Describe your project to generate functional requirements</p>
+                    {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
+                      <p className="text-xs text-blue-600 mt-2">
+                        Initial prompt available: {refinedPrompt.substring(0, 50)}...
+                      </p>
+                    )}
                   </div>
                 ) : (
-                  messages.map((message, index) => (
+                  reduxMessages.map((message, index) => (
                     <div
                       key={index}
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -209,7 +263,7 @@ const FunctionalRequirements = () => {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    defaultValue={refinedPrompt}
+                    value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your project..."
@@ -228,6 +282,14 @@ const FunctionalRequirements = () => {
                     )}
                   </button>
                 </div>
+                {refinedPrompt && refinedPrompt !== 'geyhetewery' && !inputMessage && (
+                  <button 
+                    onClick={() => setInputMessage(refinedPrompt)}
+                    className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Use initial prompt: {refinedPrompt.substring(0, 30)}...
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -235,13 +297,16 @@ const FunctionalRequirements = () => {
           {/* Requirements Section */}
           <div className={`${activeTab !== 'requirements' ? 'hidden lg:block' : ''}`}>
             <div className="bg-white rounded-lg border">
-              {functionalRequirements ? (
+              {reduxFunctionalReqs ? (
                 <div className="h-96 overflow-y-auto p-4 space-y-4">
-                  <h2 className="text-lg font-bold text-gray-900 border-b pb-2">
-                    Functional Requirements
-                  </h2>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h2 className="text-lg font-bold text-gray-900">
+                      Functional Requirements
+                    </h2>
+                    <span className="text-xs text-green-600">✓ Persisted</span>
+                  </div>
                   
-                  {Object.entries(functionalRequirements).map(([key, value]) => {
+                  {Object.entries(reduxFunctionalReqs).map(([key, value]) => {
                     if (!value || (Array.isArray(value) && value.length === 0)) return null;
                     
                     return (
@@ -253,12 +318,28 @@ const FunctionalRequirements = () => {
                       </div>
                     );
                   })}
+
+                  {/* Debug info */}
+                  <details className="mt-4 text-xs">
+                    <summary className="cursor-pointer text-gray-500">Debug Info</summary>
+                    <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto">
+                      {JSON.stringify(reduxFunctionalReqs, null, 2)}
+                    </pre>
+                  </details>
                 </div>
               ) : (
                 <div className="h-96 flex items-center justify-center text-gray-500">
                   <div className="text-center">
                     <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                     <p>No requirements generated yet</p>
+                    {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
+                      <button 
+                        onClick={() => setInputMessage(refinedPrompt)}
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+                      >
+                        Use Initial Prompt
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

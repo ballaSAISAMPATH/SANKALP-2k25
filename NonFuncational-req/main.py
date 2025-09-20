@@ -198,7 +198,8 @@ Respond ONLY with valid JSON - no explanations or markdown formatting."""
 async def chat(request: ChatRequest):
     """Single endpoint for both initial NFR analysis and modifications"""
     global conversation_history, current_non_functional_requirements
-    
+    print("fwefwef")
+    print(request.message)
     try:
         # Add user message to conversation history
         user_message = {
@@ -296,4 +297,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=6888)

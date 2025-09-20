@@ -276,8 +276,8 @@ Keep it concise and professional."""
 
             # Get first strategic question
             question, options = analyzer.get_next_essential_question()
-            analyzer.conversation_count += 1
-
+            
+            # --- CORRECTION: Change 'conversation_count' to 'question_count' ---
             if question and options:
                 analyzer.question_count += 1
                 full_response = f"{initial_response}\n\n{question}"
@@ -348,7 +348,8 @@ Keep it concise and professional."""
             else:
                 # Ask next strategic question
                 question, options = analyzer.get_next_essential_question()
-                analyzer.conversation_count += 1
+                
+                # --- CORRECTION: Change 'conversation_count' to 'question_count' ---
                 if question and options:
                     analyzer.question_count += 1
                     conversation_history.append({
@@ -382,7 +383,6 @@ Keep it concise and professional."""
     except Exception as e:
         logging.error(f"Error in /chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/")
 async def root():
