@@ -51,37 +51,37 @@ const UserSideBar = () => {
     {
       icon:Home ,
       label: 'business analysis',
-      path: '..',
+      path: '/user/business',
       description: 'track the supporting'
     },
     {
       icon:Home ,
       label: 'developer',
-      path: '/user/functional',
+      path: '/user/developer',
       description: 'tech wing'
     },
     {
       icon:Home ,
       label: 'functional requirements',
-      path: '..',
+      path: '/user/functional',
       description: 'analyze project flow'
     },
     {
       icon: BarChart3,
       label: 'non-functional requirements',
-      path: '..',
+      path: '/user/non-functional',
       description: 'align business goals'
     },
     {
       icon: MessageSquare,
       label: 'validator agent',
-      path: '..',
+      path: '/user/validator',
       description: 'Share feedback'
     },
     {
       icon: MessageSquare,
       label: 'visualization agent',
-      path: '..',
+      path: '/user/visualization',
       description: 'Share feedback'
     },
     {
