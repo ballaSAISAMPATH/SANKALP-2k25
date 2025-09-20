@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, FileText, RefreshCw } from 'lucide-react';
+import { Send, Shield, RefreshCw, Zap, Users, Monitor } from 'lucide-react';
 
-const FunctionalRequirements = () => {
+const NonFunctionalReq = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [functionalRequirements, setFunctionalRequirements] = useState(null);
+  const [nonFunctionalRequirements, setNonFunctionalRequirements] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef(null);
 
@@ -44,8 +44,8 @@ const FunctionalRequirements = () => {
       
       setMessages(prev => [...prev, aiMessage]);
       
-      if (data.functional_requirements) {
-        setFunctionalRequirements(data.functional_requirements);
+      if (data.non_functional_requirements) {
+        setNonFunctionalRequirements(data.non_functional_requirements);
         if (data.is_initial_analysis) {
           setActiveTab('requirements');
         }
@@ -67,7 +67,7 @@ const FunctionalRequirements = () => {
     try {
       await fetch('http://localhost:8000/reset', { method: 'POST' });
       setMessages([]);
-      setFunctionalRequirements(null);
+      setNonFunctionalRequirements(null);
       setActiveTab('chat');
     } catch (error) {
       console.error('Failed to reset:', error);
@@ -81,32 +81,103 @@ const FunctionalRequirements = () => {
     }
   };
 
-  const renderValue = (value) => {
-    if (Array.isArray(value)) {
-      return (
-        <ul className="list-disc pl-4 space-y-1">
-          {value.map((item, index) => (
-            <li key={index} className="text-sm">
-              {typeof item === 'string' ? item : JSON.stringify(item)}
-            </li>
-          ))}
-        </ul>
-      );
-    } else if (typeof value === 'object' && value !== null) {
-      return (
-        <div className="space-y-2">
-          {Object.entries(value).map(([subKey, subValue]) => (
-            <div key={subKey}>
-              <h4 className="font-medium text-sm capitalize">{subKey.replace(/_/g, ' ')}</h4>
-              <div className="ml-2 text-sm text-gray-600">
-                {renderValue(subValue)}
-              </div>
+  const getRequirementIcon = (category) => {
+    const iconMap = {
+      performance_requirements: Zap,
+      security_requirements: Shield,
+      usability_requirements: Users,
+      availability_requirements: Monitor,
+      reliability_requirements: Shield,
+      scalability_requirements: Zap,
+      default: Monitor
+    };
+    return iconMap[category] || iconMap.default;
+  };
+
+  const getPriorityColor = (priority) => {
+    const colors = {
+      'Critical': 'bg-red-100 text-red-700 border-red-200',
+      'High': 'bg-orange-100 text-orange-700 border-orange-200',
+      'Medium': 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      'Low': 'bg-green-100 text-green-700 border-green-200'
+    };
+    return colors[priority] || 'bg-gray-100 text-gray-700 border-gray-200';
+  };
+
+  const renderMetrics = (metrics) => {
+    if (!metrics) return null;
+    
+    return (
+      <div className="space-y-1">
+        {Array.isArray(metrics) ? (
+          metrics.map((metric, index) => (
+            <div key={index} className="text-sm bg-blue-50 px-2 py-1 rounded">
+              {metric}
             </div>
-          ))}
+          ))
+        ) : typeof metrics === 'object' ? (
+          Object.entries(metrics).map(([key, value]) => (
+            <div key={key} className="text-sm bg-blue-50 px-2 py-1 rounded">
+              <span className="font-medium">{key}:</span> {value}
+            </div>
+          ))
+        ) : (
+          <div className="text-sm bg-blue-50 px-2 py-1 rounded">{metrics}</div>
+        )}
+      </div>
+    );
+  };
+
+  const renderRequirement = (category, requirement) => {
+    if (!requirement) return null;
+
+    const Icon = getRequirementIcon(category);
+    const title = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    return (
+      <div key={category} className="bg-white border rounded-lg p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon className="h-5 w-5 text-blue-600" />
+            <h3 className="font-semibold text-gray-900">{title}</h3>
+          </div>
+          {requirement.priority_level && (
+            <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(requirement.priority_level)}`}>
+              {requirement.priority_level}
+            </span>
+          )}
         </div>
-      );
-    }
-    return <p className="text-sm">{value}</p>;
+
+        {requirement.specific_metrics && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-1">Metrics</h4>
+            {renderMetrics(requirement.specific_metrics)}
+          </div>
+        )}
+
+        {requirement.testing_criteria && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-1">Testing Criteria</h4>
+            <div className="text-sm text-gray-600">
+              {Array.isArray(requirement.testing_criteria) 
+                ? requirement.testing_criteria.join(', ')
+                : requirement.testing_criteria}
+            </div>
+          </div>
+        )}
+
+        {requirement.constraints && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-1">Constraints</h4>
+            <div className="text-sm text-gray-600">
+              {Array.isArray(requirement.constraints)
+                ? requirement.constraints.join(', ')
+                : requirement.constraints}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -114,7 +185,10 @@ const FunctionalRequirements = () => {
       {/* Header */}
       <div className="bg-white border-b p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <h1 className="text-xl font-bold text-blue-600">Functional Requirements Analyzer</h1>
+          <div className="flex items-center gap-3">
+            <Shield className="h-6 w-6 text-purple-600" />
+            <h1 className="text-xl font-bold text-purple-600">Non-Functional Requirements Analyzer</h1>
+          </div>
           <button
             onClick={resetConversation}
             disabled={isLoading}
@@ -132,23 +206,23 @@ const FunctionalRequirements = () => {
           <button
             onClick={() => setActiveTab('chat')}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'chat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
+              activeTab === 'chat' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600'
             }`}
           >
             Chat
           </button>
           <button
             onClick={() => setActiveTab('requirements')}
-            disabled={!functionalRequirements}
+            disabled={!nonFunctionalRequirements}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'requirements' && functionalRequirements
-                ? 'bg-blue-600 text-white'
-                : functionalRequirements
+              activeTab === 'requirements' && nonFunctionalRequirements
+                ? 'bg-purple-600 text-white'
+                : nonFunctionalRequirements
                 ? 'bg-white text-gray-600'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
-            Requirements {functionalRequirements && <span className="ml-1 text-xs">✓</span>}
+            NFR Analysis {nonFunctionalRequirements && <span className="ml-1 text-xs">✓</span>}
           </button>
         </div>
 
@@ -160,8 +234,9 @@ const FunctionalRequirements = () => {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.length === 0 ? (
                   <div className="text-center text-gray-500 mt-16">
-                    <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Describe your project to generate functional requirements</p>
+                    <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p className="mb-2">Analyze Non-Functional Requirements</p>
+                    <p className="text-xs text-gray-400">Performance • Security • Scalability • Reliability</p>
                   </div>
                 ) : (
                   messages.map((message, index) => (
@@ -172,7 +247,7 @@ const FunctionalRequirements = () => {
                       <div
                         className={`max-w-xs rounded-lg px-3 py-2 text-sm ${
                           message.role === 'user'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-purple-600 text-white'
                             : message.isError
                             ? 'bg-red-100 text-red-700'
                             : 'bg-gray-100 text-gray-900'
@@ -194,11 +269,12 @@ const FunctionalRequirements = () => {
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                         </div>
-                        <span className="ml-2 text-gray-500">Analyzing...</span>
+                        <span className="ml-2 text-gray-500">Analyzing NFRs...</span>
                       </div>
                     </div>
                   </div>
                 )}
+                
                 <div ref={messagesEndRef} />
               </div>
 
@@ -210,14 +286,14 @@ const FunctionalRequirements = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Describe your project..."
-                    className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    placeholder="Describe your system's quality requirements..."
+                    className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
                     disabled={isLoading}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center min-w-16"
+                    className="px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center min-w-16"
                   >
                     {isLoading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -233,30 +309,22 @@ const FunctionalRequirements = () => {
           {/* Requirements Section */}
           <div className={`${activeTab !== 'requirements' ? 'hidden lg:block' : ''}`}>
             <div className="bg-white rounded-lg border">
-              {functionalRequirements ? (
+              {nonFunctionalRequirements ? (
                 <div className="h-96 overflow-y-auto p-4 space-y-4">
                   <h2 className="text-lg font-bold text-gray-900 border-b pb-2">
-                    Functional Requirements
+                    Non-Functional Requirements
                   </h2>
                   
-                  {Object.entries(functionalRequirements).map(([key, value]) => {
-                    if (!value || (Array.isArray(value) && value.length === 0)) return null;
-                    
-                    return (
-                      <div key={key} className="border-l-2 border-blue-200 pl-3">
-                        <h3 className="font-semibold text-gray-800 mb-2 capitalize">
-                          {key.replace(/_/g, ' ')}
-                        </h3>
-                        {renderValue(value)}
-                      </div>
-                    );
-                  })}
+                  {Object.entries(nonFunctionalRequirements).map(([category, requirement]) => 
+                    renderRequirement(category, requirement)
+                  )}
                 </div>
               ) : (
                 <div className="h-96 flex items-center justify-center text-gray-500">
                   <div className="text-center">
-                    <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>No requirements generated yet</p>
+                    <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <p>No NFR analysis generated yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Quality attributes will appear here</p>
                   </div>
                 </div>
               )}
@@ -268,4 +336,4 @@ const FunctionalRequirements = () => {
   );
 };
 
-export default FunctionalRequirements;
+export default NonFunctionalReq;
