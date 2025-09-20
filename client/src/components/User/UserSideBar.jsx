@@ -63,13 +63,13 @@ const UserSideBar = () => {
     {
       icon:Home ,
       label: 'functional requirements',
-      path: '..',
+      path: '/user/functional',
       description: 'analyze project flow'
     },
     {
       icon: BarChart3,
       label: 'non-functional requirements',
-      path: '..',
+      path: '/user/non-functional',
       description: 'align business goals'
     },
     {
