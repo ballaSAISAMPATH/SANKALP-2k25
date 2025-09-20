@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, RefreshCw, Clock, Code2, Users, DollarSign, Layers } from 'lucide-react';
-
+import { Send, RefreshCw, Clock, Code2, Users, DollarSign, Layers,CloudUpload } from 'lucide-react';
+import { useSelector } from 'react-redux';
 const API_BASE_URL = 'http://localhost:8000';
 
 export default function Development() {
@@ -10,7 +10,9 @@ export default function Development() {
   const [projectPlan, setProjectPlan] = useState(null);
   const [isInitial, setIsInitial] = useState(true);
   const messagesEndRef = useRef(null);
-
+  const {refinedPrompt} = useSelector((state)=>state.task)
+  console.log(refinedPrompt);
+  
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -87,7 +89,17 @@ export default function Development() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div>
+      {
+        refinedPrompt.length>0 ? 
+      <div className="text-center p-8 bg-gray-900 rounded-lg shadow-lg">
+        <CloudUpload size={64} className="mx-auto text-cyan-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">No Project Initialized Yet</h1>
+        <p className="text-md">Please upload a project to get started.</p>
+        {refinedPrompt}
+      </div>
+      :
+          <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -245,5 +257,8 @@ export default function Development() {
         </div>
       </div>
     </div>
+      }
+    </div>
+
   );
 }
