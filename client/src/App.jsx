@@ -25,6 +25,11 @@ import AdminDashBoard from './pages/AdminPages/AdminDashBoard';
 import Development from './pages/UserPages/Development';
 import FunctionalRequirements from './pages/UserPages/FunctionalRequirements';
 import NonFunctionalReq from './pages/UserPages/NonFunctionalReq';
+
+import BusinessAnalysis from './pages/UserPages/BusinessAnalysis';
+import Developer from './pages/UserPages/Developer';
+import Visualization from './pages/UserPages/Visualization';
+import Validator from './pages/UserPages/Validator';
 const App = () => {
   const { isLoading: authInitLoading } = useAuthInitialize();
   const { user, isAuthenticated, isLoading } = useSelector((state) => state.auth);
@@ -49,6 +54,12 @@ const App = () => {
           </Route>
           <Route path="/user" element={<TaskLayout />}>
             <Route path='home' element={<UserHome/>} />
+            <Route path='business' element={<BusinessAnalysis/>} />
+            <Route path='developer' element={<Developer/>} />
+            <Route path='functional' element={<FunctionalRequirements/>} />
+            <Route path='non-functional' element={<NonFunctionalRequirements/>} />
+            <Route path='visualization' element={<Visualization/>} />
+            <Route path='validator' element={<Validator/>} />
             <Route path='profile' element={<UserProfile/>} />
             <Route path='set-new-password' element={<SetNewPassword/>} />
             <Route path='development' element={<Development/>} />

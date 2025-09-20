@@ -51,13 +51,14 @@ const UserSideBar = () => {
     {
       icon:Home ,
       label: 'business analysis',
-      path: '..',
+      path: '/user/business',
       description: 'track the supporting'
     },
     {
       icon:Home ,
       label: 'developer',
       path: '/user/development',
+
       description: 'tech wing'
     },
     {
@@ -75,13 +76,13 @@ const UserSideBar = () => {
     {
       icon: MessageSquare,
       label: 'validator agent',
-      path: '..',
+      path: '/user/validator',
       description: 'Share feedback'
     },
     {
       icon: MessageSquare,
       label: 'visualization agent',
-      path: '..',
+      path: '/user/visualization',
       description: 'Share feedback'
     },
     {

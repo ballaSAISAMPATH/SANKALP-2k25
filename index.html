@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-Functional Requirements Validator</title>
+    <!-- Use Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-container {
+            height: 60vh;
+            overflow-y: auto;
+        }
+        .chat-bubble-user {
+            background-color: #e0f2fe;
+            border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
+        }
+        .chat-bubble-model {
+            background-color: #f3f4f6;
+            border-radius: 1.5rem 1.5rem 1.5rem 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 flex flex-col items-center">
+
+    <!-- Main container for the app -->
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6 md:p-10 my-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Non-Functional Requirements Validator</h1>
+            <p id="subheading" class="text-gray-500 text-lg">Define the quality attributes of your system with AI.</p>
+        </header>
+
+        <!-- Initial input area -->
+        <section id="initial-prompt-section">
+            <label for="businessDescription" class="block text-gray-700 font-semibold mb-2">Enter your business logic description:</label>
+            <textarea id="businessDescription" rows="10" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" placeholder="e.g., 'A high-traffic e-commerce platform for vintage clothing, expecting thousands of concurrent users during peak sales events and handling secure payment transactions...'"></textarea>
+            
+            <div class="flex items-center justify-center mt-6">
+                <button id="validateBtn" class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                    Validate
+                </button>
+            </div>
+        </section>
+
+        <!-- Chat interface (hidden initially) -->
+        <section id="chat-section" class="hidden">
+            <div id="chatHistory" class="chat-container space-y-4 mb-4 p-4 border border-gray-200 rounded-lg">
+                <!-- Chat messages will be dynamically added here -->
+            </div>
+
+            <div class="flex items-center">
+                <input id="chatInput" type="text" placeholder="Ask a follow-up question about NFRs..." class="flex-grow p-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200">
+                <button id="sendBtn" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-r-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                    Send
+                </button>
+            </div>
+        </section>
+
+        <!-- Status message container -->
+        <div id="statusMessage" class="mt-4 text-center text-gray-500"></div>
+    </div>
+
+    <!-- Firebase and main application script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase initialization (required for the environment)
+        setLogLevel('debug');
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userId = null;
+        let isAuthReady = false;
+        let chatHistory = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                if (typeof __initial_auth_token !== 'undefined') {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        await signInAnonymously(auth);
+                    }
+                }
+            } else {
+                await signInAnonymously(auth);
+            }
+            isAuthReady = true;
+        });
+
+        // UI element references
+        const initialPromptSection = document.getElementById('initial-prompt-section');
+        const chatSection = document.getElementById('chat-section');
+        const validateBtn = document.getElementById('validateBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const descriptionInput = document.getElementById('businessDescription');
+        const chatInput = document.getElementById('chatInput');
+        const chatHistoryDiv = document.getElementById('chatHistory');
+        const statusMessage = document.getElementById('statusMessage');
+        const subheading = document.getElementById('subheading');
+
+        // Functions to manage UI state and display messages
+        function showLoading(message) {
+            statusMessage.innerHTML = <svg class="animate-spin h-5 w-5 mr-3 text-indigo-500 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0_0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${message};
+        }
+
+        function hideLoading() {
+            statusMessage.innerHTML = '';
+        }
+
+        function addMessageToChat(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex', 'flex-col', 'max-w-xl', 'p-4', 'rounded-xl', 'text-gray-800', 'prose', 'prose-sm');
+
+            if (role === 'user') {
+                messageDiv.classList.add('ml-auto', 'chat-bubble-user');
+            } else {
+                messageDiv.classList.add('mr-auto', 'chat-bubble-model');
+            }
+
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>'); // Handle newlines
+            chatHistoryDiv.appendChild(messageDiv);
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight; // Auto-scroll to the latest message
+        }
+
+        // Main function to call the Gemini API
+        async function callGeminiAPI(promptText) {
+            showLoading("Generating response...");
+            
+            chatHistory.push({
+                role: 'user',
+                parts: [{ text: promptText }]
+            });
+
+            const payload = {
+                contents: chatHistory,
+            };
+
+            const apiKey = "";
+            const apiUrl = https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey};
+            
+            let retryCount = 0;
+            const maxRetries = 3;
+            let response;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        break;
+                    } else {
+                        throw new Error(API call failed with status: ${response.status});
+                    }
+                } catch (error) {
+                    retryCount++;
+                    if (retryCount >= maxRetries) {
+                        console.error('Max retries reached. API call failed:', error);
+                        throw error;
+                    }
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    await new Promise(res => setTimeout(res, delay));
+                }
+            }
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data from the API.');
+            }
+
+            const result = await response.json();
+            const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            hideLoading();
+            
+            if (textContent) {
+                chatHistory.push({
+                    role: 'model',
+                    parts: [{ text: textContent }]
+                });
+                addMessageToChat('model', textContent);
+            } else {
+                addMessageToChat('model', 'Sorry, I couldn\'t generate a response. Please try again.');
+            }
+        }
+
+        // Event listener for the initial "Validate" button
+        validateBtn.addEventListener('click', async () => {
+            const description = descriptionInput.value.trim();
+            if (!description) {
+                statusMessage.textContent = 'Please enter a description to validate.';
+                return;
+            }
+
+            // Hide initial prompt and show chat interface
+            initialPromptSection.classList.add('hidden');
+            chatSection.classList.remove('hidden');
+            subheading.textContent = 'Chat with the AI about your system qualities.';
+
+            addMessageToChat('user', description);
+            
+            // Initial prompt for the AI to provide a list of non-functional requirements
+            const prompt = Analyze the following business logic description and produce a well-structured list of its most critical non-functional requirements (NFRs). Focus on areas like Performance, Security, Usability, and Reliability. Each requirement should be clear, concise, and presented in an easy-to-read format. The description is: "${description}";
+            
+            await callGeminiAPI(prompt);
+        });
+
+        // Event listener for the "Send" button in the chat
+        sendBtn.addEventListener('click', async () => {
+            const question = chatInput.value.trim();
+            if (!question) return;
+
+            addMessageToChat('user', question);
+            chatInput.value = '';
+            
+            await callGeminiAPI(question);
+        });
+
+        // Allow sending messages with the Enter key
+        chatInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
