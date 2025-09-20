@@ -43,26 +43,44 @@ const UserSideBar = () => {
 
   const menuItems = [
     {
-      icon: Home,
-      label: 'task 1',
+      icon:Plus ,
+      label: 'start analysis',
       path: '/user/home',
-      description: 'Update status'
+      description: 'setup business environment'
     },
     {
-      icon: Plus,
-      label: 'task 2',
+      icon:Home ,
+      label: 'business analysis',
       path: '..',
-      description: 'Add new AI tasks'
+      description: 'track the supporting'
+    },
+    {
+      icon:Home ,
+      label: 'developer',
+      path: '..',
+      description: 'tech wind'
+    },
+    {
+      icon:Home ,
+      label: 'functional requirements',
+      path: '..',
+      description: 'analyze project flow'
     },
     {
       icon: BarChart3,
-      label: 'task 3',
+      label: 'non-functional requirements',
       path: '..',
-      description: 'View analytics'
+      description: 'align business goals'
     },
     {
       icon: MessageSquare,
-      label: 'task 4',
+      label: 'validator agent',
+      path: '..',
+      description: 'Share feedback'
+    },
+    {
+      icon: MessageSquare,
+      label: 'visualization agent',
       path: '..',
       description: 'Share feedback'
     },

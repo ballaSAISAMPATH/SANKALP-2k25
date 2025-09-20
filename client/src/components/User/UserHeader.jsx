@@ -14,17 +14,6 @@ const UserHeader = () => {
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
-
-
- 
-
-
-
-  
-
- 
-
   const menuItems = [
     {
       icon: Home,
@@ -97,20 +86,12 @@ const UserHeader = () => {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             </div>
             <div>
-              <span className="text-xl font-bold text-gray-900">AI TaskFlow</span>
-              <div className="text-xs text-green-500 font-medium">Powered by AI</div>
+              <span className="text-xl font-bold text-gray-900">NexGent</span>
+              <div className="text-xs text-green-500 font-m edium">Powered by AI</div>
             </div>
           </div>
 
           <nav className="hidden md:flex items-center space-x-8 relative">
-            <a
-              onClick={() => alert("i am a button")}
-              className={`transition duration-300 cursor-pointer px-2 py-1 ${
-                isAITaskActive ? 'text-green-500 font-semibold' : 'text-gray-600 hover:text-green-500'
-              }`}
-            >
-              AI task
-           </a>
             <button
               className="bg-gradient-to-br from-green-500 cursor-pointer to-green-600 hover:from-[#8FE877] hover:to-green-500 text-white font-bold w-10 h-10 rounded-full transition-all duration-200 text-sm flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 ring-2 ring-white/20"
               onClick={() => navigate('/user/profile')}
@@ -118,7 +99,6 @@ const UserHeader = () => {
               {user && user.userName?.[0]?.toUpperCase()}
             </button>
           </nav>
-
           <div className="md:hidden flex items-center">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
