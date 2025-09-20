@@ -34,7 +34,32 @@ mongoose
   .catch((err) => {
     console.error(err);
   });
+app.post("/user/storeMongoDb", async (req, res) => {
+    try {
+        console.log("Received request body:", req.body);
+        const { prompt } = req.body;
 
+        if (!prompt) {
+            return res.status(400).json({ error: "Prompt is required." });
+        }
+
+        const newPrompt = await Prompt.create({ prompt });
+        
+        console.log("Successfully stored:", newPrompt);
+        
+        res.status(201).json({ 
+            message: "Prompt stored successfully!", 
+            data: newPrompt 
+        });
+
+    } catch (error) {
+        console.error("Error storing prompt to MongoDB:", error);
+        res.status(500).json({ 
+            error: "Failed to store prompt.",
+            details: error.message
+        });
+    }
+});
 app.get("/user/storeMongoDb", async (req, res) => {
     try {
         const allPrompts = await Prompt.find({});

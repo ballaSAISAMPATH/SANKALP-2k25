@@ -91,15 +91,15 @@ export default function Development() {
   return (
     <div>
       {
-        refinedPrompt.length>0 ? 
-      <div className="text-center p-8 bg-gray-900 rounded-lg shadow-lg">
+        refinedPrompt.length<=0 ? 
+      <div className="text-center p-8 bg-gray-900 rounded-lg flex flex-col justify-center items-center h-screen shadow-lg">
         <CloudUpload size={64} className="mx-auto text-cyan-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">No Project Initialized Yet</h1>
         <p className="text-md">Please upload a project to get started.</p>
-        {refinedPrompt}
       </div>
       :
-          <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+            {refinedPrompt}
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
         <div className="text-center mb-8">

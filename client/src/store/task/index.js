@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  refinedPrompt:'',
+  refinedPrompt:'geyhetewery',
 };
 
 const chatSlice = createSlice({

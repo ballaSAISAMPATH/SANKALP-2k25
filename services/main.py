@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyBAJHmxT_JPxYRvsM8006-oF_r7jYhw2sM")
+genai.configure(api_key="AIzaSyAnOE0X5v0mkgly9du6M0V0-7ibOF6Y5Vs")
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 # Single global conversation history
@@ -31,11 +31,13 @@ analyzer = None
 
 class ChatRequest(BaseModel):
     message: str
+
 class ChatResponse(BaseModel):
     response: str
     satisfied: bool
     final_prompt: Optional[str] = None
     options: Optional[List[str]] = None
+
 def extract_text(response) -> str:
     """Safely extract text from Gemini response"""
     if hasattr(response, "text") and response.text:
@@ -245,7 +247,7 @@ Make all recommendations specific, actionable, and realistic. Include actual num
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     global conversation_history, analyzer
-    print("hii")
+    
     try:
         # Add user message to conversation
         user_message = {
@@ -274,8 +276,7 @@ Keep it concise and professional."""
 
             # Get first strategic question
             question, options = analyzer.get_next_essential_question()
-            analyzer.conversation_count += 1
-
+            
             if question and options:
                 analyzer.question_count += 1
                 full_response = f"{initial_response}\n\n{question}"
@@ -346,7 +347,7 @@ Keep it concise and professional."""
             else:
                 # Ask next strategic question
                 question, options = analyzer.get_next_essential_question()
-                analyzer.conversation_count += 1
+                
                 if question and options:
                     analyzer.question_count += 1
                     conversation_history.append({
@@ -381,7 +382,6 @@ Keep it concise and professional."""
         logging.error(f"Error in /chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/")
 async def root():
     return {"message": "Optimized Business Setup Chatbot API", "version": "3.0.0"}
@@ -392,7 +392,6 @@ async def reset_conversation():
     conversation_history = []
     analyzer = None
     return {"message": "Conversation reset successfully"}
-
 
 if __name__ == "__main__":
     import uvicorn
