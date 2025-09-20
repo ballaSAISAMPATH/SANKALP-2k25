@@ -31,6 +31,9 @@ export default function UserHome() {
       
       if (response.data.satisfied) {
         dispatch(setRefinedPrompt(response.data.final_prompt || ""));
+        const res = await axios.post("http://localhost:5000/user/storeMongoDb",{prompt:response.data.final_prompt});
+        console.log(res);
+        
       }
     } catch (error) {
       console.error("Error calling AI API:", error);

@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  refinedPrompt:'erethg',
+  refinedPrompt:'',
 };
 
 const chatSlice = createSlice({
