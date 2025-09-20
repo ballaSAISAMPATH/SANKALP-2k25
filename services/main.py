@@ -1,240 +1,163 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 from datetime import datetime
 import google.generativeai as genai
 import os
+import json
+import re
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+
 app = FastAPI(title="Business Setup Chatbot", version="1.0.0")
-origins = [
-    "http://localhost:5173",  # React dev server
-    "http://127.0.0.1:3000",
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["*"],  # allows OPTIONS, GET, POST, etc.
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key="AIzaSyBAJHmxT_JPxYRvsM8006-oF_r7jYhw2sM")
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
-# Single global conversation history (resets when server restarts)
+# Single global conversation history
 conversation_history: List[Dict[str, str]] = []
 analyzer = None
 
 class ChatRequest(BaseModel):
     message: str
-
 class ChatResponse(BaseModel):
     response: str
     satisfied: bool
     final_prompt: Optional[str] = None
     options: Optional[List[str]] = None
+def extract_text(response) -> str:
+    """Safely extract text from Gemini response"""
+    if hasattr(response, "text") and response.text:
+        return response.text.strip()
+    elif hasattr(response, "candidates") and response.candidates:
+        parts = response.candidates[0].content.parts
+        return " ".join([p.text for p in parts if hasattr(p, "text")])
+    else:
+        return ""
 
-class StreamlinedBusinessAnalyzer:
+class OptimizedBusinessAnalyzer:
     def __init__(self):
-        # Only essential areas that can't be self-determined
-        self.essential_areas = [
-            "business_model",
-            "target_market", 
-            "revenue_model",
-            "resources_budget",
-            "timeline"
-        ]
-        
-        self.covered_areas = set()
-        self.business_type = None
         self.question_count = 0
-        
-    def analyze_business_type(self, initial_idea: str) -> str:
-        """Dynamically identify business type from user's idea"""
-        idea_lower = initial_idea.lower()
-        
-        if any(word in idea_lower for word in ["app", "platform", "website", "software", "tech", "digital"]):
-            return "tech_digital"
-        elif any(word in idea_lower for word in ["restaurant", "food", "cafe", "delivery", "catering"]):
-            return "food_service"
-        elif any(word in idea_lower for word in ["store", "shop", "retail", "sell products", "e-commerce"]):
-            return "retail"
-        elif any(word in idea_lower for word in ["service", "consulting", "freelance", "agency"]):
-            return "service_based"
-        elif any(word in idea_lower for word in ["education", "training", "teaching", "course", "coaching"]):
-            return "education"
-        else:
-            return "general"
-    
+        self.max_questions = 3  # Reduced to maximum 3 questions
+        self.asked_categories = set()  # Track what we've already asked about
+
     def get_next_essential_question(self) -> tuple[Optional[str], Optional[List[str]]]:
-        """Get the next essential question with numbered options"""
-        
-        if "business_model" not in self.covered_areas:
-            self.covered_areas.add("business_model")
-            return self.get_business_model_question()
-            
-        elif "target_market" not in self.covered_areas:
-            self.covered_areas.add("target_market")
-            return self.get_target_market_question()
-            
-        elif "revenue_model" not in self.covered_areas:
-            self.covered_areas.add("revenue_model")
-            return self.get_revenue_question()
-            
-        elif "resources_budget" not in self.covered_areas:
-            self.covered_areas.add("resources_budget")
-            return self.get_resources_question()
-            
-        elif "timeline" not in self.covered_areas:
-            self.covered_areas.add("timeline")
-            return self.get_timeline_question()
+        return self.generate_strategic_question(conversation_history)
+
+    def is_satisfied(self) -> bool:
+        # Check if we have enough info OR reached max questions
+        if self.question_count >= self.max_questions:
+            return True
+        return self.has_sufficient_business_info(conversation_history)
+
+    def has_sufficient_business_info(self, conversation: List[Dict]) -> bool:
+        """Check if we have the core business information needed"""
+        conversation_text = "\n".join([
+            f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
+            for msg in conversation
+        ])
+
+        analysis_prompt = f"""You are analyzing a business consultation conversation. Determine if you have SUFFICIENT information to create a solid business plan.
+
+CONVERSATION:
+{conversation_text}
+
+You HAVE ENOUGH information if you can clearly understand:
+1. What the business does/sells
+2. Who the target customers are (even generally)
+3. How the business will make money
+
+You DON'T NEED to know:
+- Exact financial details (you can estimate)
+- Specific operational details (you can recommend)
+- Marketing specifics (you can suggest)
+- Legal structures (you can advise)
+
+Be lenient - if you understand the core business concept and target market, that's usually enough to create a comprehensive business plan with recommendations.
+
+Respond with ONLY "SUFFICIENT" or "NEED_MORE" - nothing else."""
+
+        response = model.generate_content(analysis_prompt)
+        reply = extract_text(response)
+        logging.info(f"Sufficiency check: {reply}")
+        return "SUFFICIENT" in reply.upper()
+
+    def generate_strategic_question(self, conversation: List[Dict]) -> tuple[Optional[str], Optional[List[str]]]:
+        """Generate only the most critical questions that can't be self-answered"""
+        conversation_text = "\n".join([
+            f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
+            for msg in conversation
+        ])
+
+        strategic_prompt = f"""You are a business consultant. Based on this conversation, identify the ONE most critical piece of information you're missing that you CANNOT reasonably assume or recommend yourself.
+
+CONVERSATION:
+{conversation_text}
+
+RULES:
+1. ONLY ask about things you absolutely CANNOT infer or recommend
+2. Focus on USER-SPECIFIC information that only they know
+3. Don't ask about things you can research or recommend (like marketing strategies, legal structures, etc.)
+4. Ask about their specific situation, constraints, or preferences
+5. Make it actionable for their specific business idea
+
+CRITICAL AREAS (only ask if truly unknown):
+- Target market specifics (if business serves multiple very different markets)
+- Business model choice (if multiple viable models exist for their idea) 
+- Scale/scope preferences (if it significantly affects the business plan)
+- Resource constraints (if it's crucial for planning)
+
+If you have enough info to create a solid business plan with recommendations, return: {{"question": null, "options": null}}
+
+Otherwise, return JSON:
+{{
+    "question": "One specific strategic question?",
+    "options": [
+        "Option 1",
+        "Option 2", 
+        "Option 3",
+        "Option 4"
+    ]
+}}"""
+
+        response = model.generate_content(strategic_prompt)
+        raw_reply = extract_text(response)
+        logging.info(f"Strategic question response: {raw_reply}")
+
+        # Check if AI thinks we have enough info
+        if "null" in raw_reply.lower() or "enough" in raw_reply.lower():
+            return None, None
+
+        json_match = re.search(r'\{.*\}', raw_reply, re.DOTALL)
+        if json_match:
+            try:
+                question_data = json.loads(json_match.group())
+                question = question_data.get("question")
+                options = question_data.get("options", [])
+
+                if not question or question == "null":
+                    return None, None
+
+                if not options or len(options) < 3:
+                    return None, None
+
+                return question, options
+            except Exception as e:
+                logging.error(f"JSON parse error: {e}")
+                return None, None
         
         return None, None
-    
-    def get_business_model_question(self) -> tuple[str, List[str]]:
-        """Get business model question based on business type"""
-        
-        questions_and_options = {
-            "tech_digital": (
-                "How will customers access your solution?",
-                [
-                    "Mobile app only",
-                    "Web platform only", 
-                    "Both mobile and web",
-                    "API/Service for businesses"
-                ]
-            ),
-            "food_service": (
-                "What's your service model?",
-                [
-                    "Dine-in restaurant",
-                    "Delivery/takeout only",
-                    "Food truck/mobile",
-                    "Catering services",
-                    "Mixed model"
-                ]
-            ),
-            "retail": (
-                "How will you sell your products?",
-                [
-                    "Physical store only",
-                    "Online store only",
-                    "Both physical and online",
-                    "Marketplace (Amazon/eBay)",
-                    "Wholesale to businesses"
-                ]
-            ),
-            "service_based": (
-                "How will you deliver your service?",
-                [
-                    "At client location",
-                    "Remote/online only",
-                    "At my office/location",
-                    "Mixed approach"
-                ]
-            ),
-            "education": (
-                "What's your teaching format?",
-                [
-                    "Online courses",
-                    "In-person classes",
-                    "One-on-one tutoring",
-                    "Group workshops",
-                    "Mixed format"
-                ]
-            ),
-            "general": (
-                "What's your business model?",
-                [
-                    "Product sales",
-                    "Service provision",
-                    "Digital/online business",
-                    "Subscription model",
-                    "Marketplace/platform"
-                ]
-            )
-        }
-        
-        return questions_and_options.get(self.business_type, questions_and_options["general"])
-    
-    def get_target_market_question(self) -> tuple[str, List[str]]:
-        """Get target market question"""
-        return (
-            "Who is your primary target customer?",
-            [
-                "Individual consumers (B2C)",
-                "Small businesses (1-50 employees)",
-                "Medium businesses (50-500 employees)",
-                "Large enterprises (500+ employees)",
-                "Government/non-profit",
-                "Mixed customer base"
-            ]
-        )
-    
-    def get_revenue_question(self) -> tuple[str, List[str]]:
-        """Get revenue model question"""
-        
-        if self.business_type == "tech_digital":
-            return (
-                "How will you charge customers?",
-                [
-                    "Monthly subscription ($5-50/month)",
-                    "Annual subscription (discount for yearly)",
-                    "One-time purchase/license",
-                    "Freemium (free + premium tiers)",
-                    "Commission/transaction fees",
-                    "Advertisement revenue"
-                ]
-            )
-        else:
-            return (
-                "What's your pricing approach?",
-                [
-                    "Premium pricing (higher than competitors)",
-                    "Competitive pricing (match market rates)",
-                    "Value pricing (lower price, good value)",
-                    "Subscription/recurring revenue",
-                    "Project-based pricing",
-                    "Commission/percentage based"
-                ]
-            )
-    
-    def get_resources_question(self) -> tuple[str, List[str]]:
-        """Get resources/budget question"""
-        return (
-            "What's your startup budget range?",
-            [
-                "Under $1,000 (bootstrap/minimal)",
-                "$1,000 - $10,000 (small investment)",
-                "$10,000 - $50,000 (moderate investment)",
-                "$50,000 - $200,000 (significant investment)",
-                "$200,000+ (major investment/funding needed)",
-                "I need to research and determine costs"
-            ]
-        )
-    
-    def get_timeline_question(self) -> tuple[str, List[str]]:
-        """Get timeline question"""
-        return (
-            "When do you want to launch?",
-            [
-                "Within 1-3 months (quick launch)",
-                "3-6 months (standard timeline)",
-                "6-12 months (thorough preparation)",
-                "1+ years (long-term planning)",
-                "As soon as funding is secured",
-                "When I have more skills/experience"
-            ]
-        )
-    
-    def is_satisfied(self) -> bool:
-        """Check if all essential questions are covered"""
-        return len(self.covered_areas) >= len(self.essential_areas)
-
-def format_options_response(question: str, options: List[str]) -> str:
-    """Format question with numbered options"""
-    formatted_options = "\n".join([f"{i+1}. {option}" for i, option in enumerate(options)])
-    return f"{question}\n\n{formatted_options}\n\nPlease respond with just the number (1-{len(options)}) of your choice."
 
 def process_numbered_response(response: str, options: List[str]) -> str:
     """Convert numbered response to actual option text"""
@@ -243,224 +166,227 @@ def process_numbered_response(response: str, options: List[str]) -> str:
         if 1 <= choice_num <= len(options):
             return options[choice_num - 1]
         else:
-            return response  # Fallback to original response
+            return response
     except ValueError:
-        return response  # Fallback if not a number
+        return response
 
-def generate_final_prompt(conversation: List[Dict]) -> str:
-    """Generate comprehensive business plan prompt"""
-    
+def generate_comprehensive_prompt(conversation: List[Dict]) -> str:
+    """Generate a detailed business plan prompt based on the conversation"""
     conversation_summary = "\n".join([
         f"{'User' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
         for msg in conversation
     ])
-    
-    final_prompt = f"""You are a business planning expert. Based on the following consultation conversation, create a comprehensive business plan.
+
+    final_prompt = f"""You are an expert business consultant. Based on this consultation conversation, create a comprehensive and actionable business plan.
 
 CONSULTATION CONVERSATION:
 {conversation_summary}
 
 Create a detailed business plan with these sections:
 
-1. **EXECUTIVE SUMMARY**
-   - Business concept overview
-   - Target market and value proposition
-   - Financial highlights and funding needs
-   - Success factors
+## 1. EXECUTIVE SUMMARY
+- Business concept overview
+- Target market summary  
+- Unique value proposition
+- Revenue model
+- Key success factors
 
-2. **BUSINESS DESCRIPTION & STRATEGY**
-   - Detailed product/service description
-   - Business model and revenue streams
-   - Competitive advantages
-   - Mission and objectives
+## 2. BUSINESS DESCRIPTION & STRATEGY
+- Detailed business description
+- Products/services offered
+- Business model explanation
+- Competitive advantages
+- Growth strategy
 
-3. **MARKET ANALYSIS**
-   - Industry overview and trends
-   - Target customer analysis
-   - Market size and opportunity
-   - Competitive landscape
+## 3. MARKET ANALYSIS
+- Target customer analysis
+- Market size and trends
+- Competitive landscape
+- Market positioning strategy
 
-4. **MARKETING & SALES PLAN**
-   - Customer acquisition strategy
-   - Marketing channels and budget
-   - Sales process and pricing
-   - Brand positioning
+## 4. MARKETING & SALES STRATEGY
+- Customer acquisition strategy
+- Marketing channels and tactics
+- Sales process and strategy
+- Pricing strategy
+- Brand positioning
 
-5. **OPERATIONS PLAN**
-   - Day-to-day operations
-   - Technology and equipment needs
-   - Staffing requirements
-   - Supply chain and logistics
+## 5. OPERATIONS PLAN
+- Business operations overview
+- Required resources and equipment
+- Staffing requirements
+- Supply chain considerations
+- Quality control measures
 
-6. **FINANCIAL PROJECTIONS**
-   - Startup costs breakdown
-   - Revenue projections (3-year)
-   - Operating expenses
-   - Break-even analysis
-   - Funding requirements
+## 6. FINANCIAL PROJECTIONS & REQUIREMENTS
+- Startup costs breakdown
+- Revenue projections (Year 1-3)
+- Operating expenses forecast
+- Break-even analysis
+- Funding requirements
 
-7. **IMPLEMENTATION ROADMAP**
-   - Launch timeline with milestones
-   - First 90 days action plan
-   - Success metrics and KPIs
-   - Risk mitigation strategies
+## 7. IMPLEMENTATION ROADMAP
+- Phase 1: Launch preparation (0-3 months)
+- Phase 2: Business launch (3-6 months)
+- Phase 3: Growth phase (6-12 months)
+- Key milestones and deadlines
+- Risk mitigation strategies
 
-8. **APPENDICES**
-   - Market research data
-   - Financial assumptions
-   - Legal requirements
-   - Supporting documents
+## 8. NEXT STEPS & RECOMMENDATIONS
+- Immediate action items
+- Resource requirements
+- Professional services needed
+- Key performance indicators
 
-Make all recommendations specific and actionable based on the business discussed. Include realistic timelines, budgets, and practical next steps."""
+Make all recommendations specific, actionable, and realistic. Include actual numbers, timelines, and practical steps they can implement immediately. Base everything on the information provided in the conversation, but fill in reasonable assumptions where needed."""
 
     return final_prompt
 
+# API endpoints
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     global conversation_history, analyzer
     
     try:
-        print(request.message)
-        # Add user message to history
+        # Add user message to conversation
         user_message = {
             "role": "user",
             "content": request.message,
             "timestamp": datetime.now().isoformat()
         }
         conversation_history.append(user_message)
-        
-        # Initialize analyzer on first message
+
+        # First message - initialize and ask first question
         if len(conversation_history) == 1:
-            analyzer = StreamlinedBusinessAnalyzer()
-            analyzer.business_type = analyzer.analyze_business_type(request.message)
-            
-            # Generate enthusiastic initial response
-            gemini_prompt = f"""You are a business consultant. A user wants to start this business: "{request.message}"
+            analyzer = OptimizedBusinessAnalyzer()
 
-Generate an enthusiastic, encouraging response that:
+            # Generate encouraging initial response
+            initial_prompt = f"""You are a business consultant. A user wants to start: "{request.message}"
+
+Generate a brief, encouraging response (2-3 sentences) that:
 1. Acknowledges their business idea positively
-2. Mentions you'll ask just a few essential questions to create their business plan
-3. Explains they can respond with just numbers for quick answers
-4. Keep it brief and professional
+2. Mentions you'll ask just a few key questions to create their business plan
+3. Be specific to their business type
 
-Business type detected: {analyzer.business_type}"""
+Keep it concise and professional."""
 
-            response = model.generate_content(gemini_prompt)
-            initial_response = response.text
-            
-            # Get first question
+            response = model.generate_content(initial_prompt)
+            initial_response = extract_text(response)
+
+            # Get first strategic question
             question, options = analyzer.get_next_essential_question()
             
             if question and options:
-                full_response = f"{initial_response}\n\n{format_options_response(question, options)}"
+                analyzer.question_count += 1
+                full_response = f"{initial_response}\n\n{question}"
                 
-                response_message = {
+                conversation_history.append({
                     "role": "assistant",
                     "content": full_response,
                     "timestamp": datetime.now().isoformat()
-                }
-                conversation_history.append(response_message)
+                })
                 
                 return ChatResponse(
-                    response=full_response,
+                    response=question,
                     satisfied=False,
                     options=options
                 )
-        
-        else:
-            # Process the numbered response if previous message had options
-            if len(conversation_history) >= 2:
-                prev_assistant_msg = conversation_history[-2]
-                if prev_assistant_msg.get("role") == "assistant":
-                    # Try to extract options from previous response
-                    prev_content = prev_assistant_msg.get("content", "")
-                    if "1." in prev_content and "2." in prev_content:
-                        # Extract options from previous message
-                        lines = prev_content.split('\n')
-                        options = []
-                        for line in lines:
-                            if line.strip().startswith(('1.', '2.', '3.', '4.', '5.', '6.')):
-                                option = line.split('.', 1)[1].strip()
-                                options.append(option)
-                        
-                        if options:
-                            processed_response = process_numbered_response(request.message, options)
-                            # Update the user message with the processed response
-                            conversation_history[-1]["content"] = processed_response
-            
-            # Check if satisfied
-            if analyzer.is_satisfied():
-                final_prompt = generate_final_prompt(conversation_history)
+            else:
+                # If no questions needed, go straight to completion
+                final_prompt = generate_comprehensive_prompt(conversation_history)
+                completion_message = "Great! I have enough information about your business idea. Your comprehensive business plan is ready!"
                 
-                # Generate final response
-                gemini_final_prompt = """Generate a brief congratulatory message that:
-1. Thanks them for providing the essential information
-2. Mentions their business plan is ready to be generated
-3. Explains they can use the provided prompt with any AI assistant
-Keep it encouraging and concise."""
-
-                response = model.generate_content(gemini_final_prompt)
-                final_response = response.text
-                
-                response_message = {
-                    "role": "assistant", 
-                    "content": final_response,
+                conversation_history.append({
+                    "role": "assistant",
+                    "content": completion_message,
                     "timestamp": datetime.now().isoformat()
-                }
-                conversation_history.append(response_message)
+                })
                 
                 return ChatResponse(
-                    response=final_response,
+                    response=completion_message,
                     satisfied=True,
                     final_prompt=final_prompt
                 )
-            
+
+        else:
+            # Handle numbered responses from options
+            if len(conversation_history) >= 2:
+                prev_assistant_msg = conversation_history[-2]
+                if prev_assistant_msg.get("role") == "assistant":
+                    prev_content = prev_assistant_msg.get("content", "")
+                    # Extract options from previous message
+                    options = []
+                    for line in prev_content.split('\n'):
+                        if line.strip().startswith(tuple(str(i) + "." for i in range(1, 7))):
+                            option = line.split('.', 1)[1].strip()
+                            options.append(option)
+                    
+                    if options:
+                        processed_response = process_numbered_response(request.message, options)
+                        conversation_history[-1]["content"] = processed_response
+
+            # Check if we should ask another question or finish
+            if analyzer.is_satisfied():
+                # Generate final business plan
+                final_prompt = generate_comprehensive_prompt(conversation_history)
+                
+                completion_message = "Perfect! I now have everything needed to create your comprehensive business plan. You can use the detailed prompt with any AI to get your complete business plan with financial projections, marketing strategies, and implementation roadmap."
+                
+                conversation_history.append({
+                    "role": "assistant",
+                    "content": completion_message,
+                    "timestamp": datetime.now().isoformat()
+                })
+                
+                return ChatResponse(
+                    response=completion_message,
+                    satisfied=True,
+                    final_prompt=final_prompt
+                )
             else:
-                # Get next question
+                # Ask next strategic question
                 question, options = analyzer.get_next_essential_question()
                 
                 if question and options:
-                    formatted_question = format_options_response(question, options)
-                    
-                    response_message = {
+                    analyzer.question_count += 1
+                    conversation_history.append({
                         "role": "assistant",
-                        "content": formatted_question,
+                        "content": question,
                         "timestamp": datetime.now().isoformat()
-                    }
-                    conversation_history.append(response_message)
+                    })
                     
                     return ChatResponse(
-                        response=formatted_question,
+                        response=question,
                         satisfied=False,
                         options=options
                     )
                 else:
-                    # This shouldn't happen but fallback
-                    fallback_response = "Thank you for that information. Let me prepare your business plan now."
+                    # If no more strategic questions, finish
+                    final_prompt = generate_comprehensive_prompt(conversation_history)
+                    completion_message = "Excellent! I have all the key information needed. Your business plan is ready!"
                     
-                    response_message = {
+                    conversation_history.append({
                         "role": "assistant",
-                        "content": fallback_response,
+                        "content": completion_message,
                         "timestamp": datetime.now().isoformat()
-                    }
-                    conversation_history.append(response_message)
+                    })
                     
                     return ChatResponse(
-                        response=fallback_response,
+                        response=completion_message,
                         satisfied=True,
-                        final_prompt=generate_final_prompt(conversation_history)
+                        final_prompt=final_prompt
                     )
-        
+
     except Exception as e:
+        logging.error(f"Error in /chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def root():
-    return {"message": "Streamlined Business Setup Chatbot API", "version": "2.0.0"}
+    return {"message": "Optimized Business Setup Chatbot API", "version": "3.0.0"}
 
 @app.post("/reset")
 async def reset_conversation():
-    """Reset the conversation history"""
     global conversation_history, analyzer
     conversation_history = []
     analyzer = None

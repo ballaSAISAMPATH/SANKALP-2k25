@@ -57,8 +57,8 @@ const UserSideBar = () => {
     {
       icon:Home ,
       label: 'developer',
-      path: '..',
-      description: 'tech wind'
+      path: '/user/functional',
+      description: 'tech wing'
     },
     {
       icon:Home ,

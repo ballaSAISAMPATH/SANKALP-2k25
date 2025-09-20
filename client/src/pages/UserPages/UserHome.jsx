@@ -3,16 +3,44 @@ import { SendHorizonal, Bot, Trash2 } from "lucide-react";
 import axios from "axios";
 import { setRefinedPrompt } from "@/store/task"; 
 import { useDispatch, useSelector } from "react-redux";
+
 export default function UserHome() {
   const dispatch = useDispatch();
-  const {refinedPrompt} = useSelector((state)=>state.task);
   const [messages, setMessages] = useState([
     {
-  "text": "Hello! I'm your AI Requirements Assistant. I can help you transform your business ideas into clear, actionable requirements. How can I assist you today?",
-  "sender": "ai"
-}
+      "text": "Hello! I'm your AI Requirements Assistant. I can help you transform your business ideas into clear, actionable requirements. How can I assist you today?",
+      "sender": "ai",
+      "options": null
+    }
   ]);
   const chatEndRef = useRef(null);
+
+  const sendMessage = async (message) => {
+    try {
+      const response = await axios.post("http://localhost:8000/chat", {
+        message,
+      });
+      console.log(response.data);
+      
+      // Add AI response to state with options
+      setMessages(prevMessages => [...prevMessages, { 
+        text: response.data.response, 
+        sender: 'ai',
+        options: response.data.options || null
+      }]);
+      
+      if (response.data.satisfied) {
+        dispatch(setRefinedPrompt(response.data.final_prompt || ""));
+      }
+    } catch (error) {
+      console.error("Error calling AI API:", error);
+      setMessages(prevMessages => [...prevMessages, { 
+        text: "Sorry, I'm having trouble connecting right now. Please try again later.", 
+        sender: 'ai',
+        options: null
+      }]);
+    }
+  };
 
   const chatFormSubmitted = async (event) => {
     event.preventDefault();
@@ -20,28 +48,28 @@ export default function UserHome() {
     if (!message) return;
 
     // Add user message to state
-    setMessages(prevMessages => [...prevMessages, { text: message, sender: 'user' }]);
+    setMessages(prevMessages => [...prevMessages, { text: message, sender: 'user', options: null }]);
     event.target[0].value = "";
 
-    try {
-      const response = await axios.post("http://localhost:8000/chat", {
-        message,
-      });
-      console.log(response.data);
-      
-      // Add AI response to state
-      setMessages(prevMessages => [...prevMessages, { text: response.data.response, sender: 'ai' }]);
-      if(response.data.satisfied){
-        dispatch(setRefinedPrompt(response.data.final_prompt));
-      }
-    } catch (error) {
-      console.error("Error calling AI API:", error);
-      setMessages(prevMessages => [...prevMessages, { text: "Sorry, I'm having trouble connecting right now. Please try again later.", sender: 'ai' }]);
-    }
+    await sendMessage(message);
+  };
+
+  const handleOptionClick = async (option) => {
+    // Add the selected option as a user message
+    setMessages(prevMessages => [...prevMessages, { text: option, sender: 'user', options: null }]);
+    
+    // Send the selected option to backend
+    await sendMessage(option);
   };
 
   const clearChat = () => {
-    setMessages([]);
+    setMessages([
+      {
+        "text": "Hello! I'm your AI Requirements Assistant. I can help you transform your business ideas into clear, actionable requirements. How can I assist you today?",
+        "sender": "ai",
+        "options": null
+      }
+    ]);
   };
 
   useEffect(() => {
@@ -49,13 +77,33 @@ export default function UserHome() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const Message = ({ text, sender }) => (
+  const Message = ({ text, sender, options }) => (
     <div className={`flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
-      <div className={`
-        max-w-md p-4 rounded-3xl text-white shadow-lg
-        ${sender === 'user' ? 'bg-cyan-700 rounded-br-none' : 'bg-gray-800 rounded-bl-none'}
-      `}>
-        {text}
+      <div className="flex flex-col max-w-md">
+        <div className={`
+          p-4 rounded-3xl text-white shadow-lg
+          ${sender === 'user' ? 'bg-cyan-700 rounded-br-none' : 'bg-gray-800 rounded-bl-none'}
+        `}>
+          {text}
+        </div>
+        
+        {/* Display options if they exist */}
+        {options && options.length > 0 && (
+          <div className="mt-3 space-y-2">
+            <div className="text-sm text-gray-400 mb-2">Please select an option:</div>
+            {options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleOptionClick(option)}
+                className="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 
+                         text-white rounded-lg transition-colors duration-200 
+                         border border-gray-600 hover:border-gray-500 text-sm"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -67,7 +115,6 @@ export default function UserHome() {
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <Bot size={28} className="text-cyan-500" />
           AI Chat
-          
         </h1>
         <button
           className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
@@ -86,7 +133,12 @@ export default function UserHome() {
           </div>
         ) : (
           messages.map((msg, index) => (
-            <Message key={index} text={msg.text} sender={msg.sender} />
+            <Message 
+              key={index} 
+              text={msg.text} 
+              sender={msg.sender} 
+              options={msg.options}
+            />
           ))
         )}
         <div ref={chatEndRef} />

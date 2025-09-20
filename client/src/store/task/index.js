@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  refinedPrompt:'',
+  refinedPrompt:'erethg',
 };
 
 const chatSlice = createSlice({
@@ -9,8 +9,7 @@ const chatSlice = createSlice({
   initialState,
   reducers: {
     setRefinedPrompt :(state,action)=>{
-        alert("rgjknrjgk")
-        console.log(action.payload);
+        console.log(action);
         
         state.refinedPrompt = action.payload;
     }
