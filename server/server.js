@@ -8,7 +8,6 @@ const app = express();
 const PORT = process.env.PORT || 5000; 
 const otpRoutes = require('./routes/otp-routes')
 const authRouter = require('./routes/auth-routes');
-
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN, 
   credentials: true,             
@@ -19,8 +18,7 @@ app.use(express.json());
 
 
 app.use('/api/auth', authRouter);
-
-app.use('/api/otp',otpRoutes)
+app.use('/api/otp',otpRoutes);
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

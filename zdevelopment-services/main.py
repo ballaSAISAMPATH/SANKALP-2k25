@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyCdBMzbk72SZ0NhjqSFb0xuBTOszJMlPcw")  # Replace with your actual API key
+genai.configure(api_key="AIzaSyBAJHmxT_JPxYRvsM8006-oF_r7jYhw2sM")  # Replace with your actual API key
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 # Single global conversation (resets when server restarts)
@@ -171,7 +171,7 @@ MESSAGE: Brief explanation of changes made"""
         logging.error(f"Error updating plan: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to update project plan: {str(e)}")
 
-@app.post("/develop/chat", response_model=ChatResponse)
+@app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Single endpoint for both initial project planning and modifications"""
     global conversation_history, current_project_plan
