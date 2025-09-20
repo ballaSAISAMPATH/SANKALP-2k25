@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Shield, RefreshCw, Zap, Users, Monitor } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const NonFunctionalReq = () => {
   const [messages, setMessages] = useState([]);
@@ -8,6 +9,7 @@ const NonFunctionalReq = () => {
   const [nonFunctionalRequirements, setNonFunctionalRequirements] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef(null);
+  const {refinedPrompt} = useSelector((state)=>state.task)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -283,7 +285,7 @@ const NonFunctionalReq = () => {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={inputMessage}
+                    defaultValue={refinedPrompt}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your system's quality requirements..."

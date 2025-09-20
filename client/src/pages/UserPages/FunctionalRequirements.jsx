@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, FileText, RefreshCw } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const FunctionalRequirements = () => {
   const [messages, setMessages] = useState([]);
@@ -8,6 +9,7 @@ const FunctionalRequirements = () => {
   const [functionalRequirements, setFunctionalRequirements] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const messagesEndRef = useRef(null);
+  const {refinedPrompt} = useSelector((state)=>state.task)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -207,7 +209,7 @@ const FunctionalRequirements = () => {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={inputMessage}
+                    defaultValue={refinedPrompt}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your project..."

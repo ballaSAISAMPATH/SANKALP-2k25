@@ -168,7 +168,7 @@ export default function Development() {
               <div className="p-4 border-t border-gray-200">
                 <div className="flex gap-2">
                   <textarea
-                    value={input}
+                    defaultValue={refinedPrompt}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={isInitial ? "Describe your project idea..." : "How would you like to modify your project?"}
