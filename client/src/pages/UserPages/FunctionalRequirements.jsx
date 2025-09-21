@@ -226,12 +226,12 @@ const FunctionalRequirements = () => {
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-xs rounded-lg px-3 py-2 text-sm ${
+                        className={`max-w-lg rounded-lg px-3 py-2 text-sm ${
                           message.role === 'user'
                             ? 'bg-purple-600 text-white'
                             : message.isError
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-white'
+                            ? 'bg-black border-x-1 border-white text-red-700'
+                            : 'bg-black border-x-1 border-white text-white'
                         }`}
                       >
                         {message.content}

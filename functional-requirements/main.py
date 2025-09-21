@@ -132,6 +132,7 @@ def update_functional_requirements(message: str) -> tuple[Dict[str, Any], str]:
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
             raise HTTPException(status_code=500, detail=f"Failed to update functional requirements: {str(e)}")
+        
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Single endpoint for both initial requirements analysis and modifications"""

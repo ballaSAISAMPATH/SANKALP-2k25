@@ -114,7 +114,7 @@ export default function UserHome() {
   return (
     <div className="flex flex-col h-250 w-full bg-black text-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black border-b border-gray-800 shadow-lg min-h-0">
+      <div className="flex items-center justify-between  p-4 pt-6 bg-black border-b border-gray-800 shadow-lg min-h-0">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <Bot size={28} className="text-purple-500" />
           AI Chat

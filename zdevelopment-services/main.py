@@ -20,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
 # Configure Gemini AI
 genai.configure(api_key="AIzaSyBAJHmxT_JPxYRvsM8006-oF_r7jYhw2sM")  # Replace with your actual API key
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
