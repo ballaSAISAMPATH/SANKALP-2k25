@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 # Configure Gemini AI
-genai.configure(api_key="AIzaSyBul7g3Q17OBnvD_H5hcFAMTVp8fUjKkqU")  # Replace with your actual API key
+genai.configure(api_key="AIzaSyBAJHmxT_JPxYRvsM8006-oF_r7jYhw2sM")  # Replace with your actual API key
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 # Single global conversation (resets when server restarts)

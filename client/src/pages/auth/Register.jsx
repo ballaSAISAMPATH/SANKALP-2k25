@@ -74,7 +74,7 @@ const Register = () => {
   const getStrengthColor = () => {
     if (passwordStrength <= 1) return 'bg-red-400'
     if (passwordStrength <= 3) return 'bg-yellow-400'
-    return 'bg-green-500'
+    return 'bg-purple-500'
   }
 
   const getStrengthText = () => {
@@ -111,7 +111,7 @@ const Register = () => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-green-500" />
+                <User className="h-5 w-5 text-purple-500" />
               </div>
             <input
             id="userName"
@@ -121,7 +121,7 @@ const Register = () => {
             value={formData.userName}
             onChange={handleInputChange}
             placeholder="Enter your username"
-            className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+            className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
           />
 
             </div>
@@ -133,7 +133,7 @@ const Register = () => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-green-500" />
+                <Mail className="h-5 w-5 text-purple-500" />
               </div>
               <input
                 id="email"
@@ -142,7 +142,7 @@ const Register = () => {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
                 placeholder="Enter your email"
               />
             </div>
@@ -154,7 +154,7 @@ const Register = () => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-green-500" />
+                <Lock className="h-5 w-5 text-purple-500" />
               </div>
               <input
                 id="password"
@@ -163,7 +163,7 @@ const Register = () => {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
                 placeholder="Create a password"
               />
               <button
@@ -172,9 +172,9 @@ const Register = () => {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-green-500" />
+                  <EyeOff className="h-5 w-5 text-purple-500" />
                 ) : (
-                  <Eye className="h-5 w-5 text-green-500" />
+                  <Eye className="h-5 w-5 text-purple-500" />
                 )}
               </button>
             </div>
@@ -203,7 +203,7 @@ const Register = () => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-green-500" />
+                <Lock className="h-5 w-5 text-purple-500" />
               </div>
               <input
                 id="confirmPassword"
@@ -212,7 +212,7 @@ const Register = () => {
                 required
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
                 placeholder="Confirm your password"
               />
               <button
@@ -221,9 +221,9 @@ const Register = () => {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5 text-green-500" />
+                  <EyeOff className="h-5 w-5 text-purple-500" />
                 ) : (
-                  <Eye className="h-5 w-5 text-green-500" />
+                  <Eye className="h-5 w-5 text-purple-500" />
                 )}
               </button>
             </div>
@@ -231,7 +231,7 @@ const Register = () => {
             {formData.confirmPassword && (
               <div className="mt-2">
                 {formData.password === formData.confirmPassword ? (
-                  <p className="text-xs flex items-center space-x-1 text-green-600">
+                  <p className="text-xs flex items-center space-x-1 text-purple-600">
                     <CheckCircle className="w-3 h-3" />
                     <span>Passwords match</span>
                   </p>
@@ -251,15 +251,15 @@ const Register = () => {
             name="terms"
             type="checkbox"
             required
-            className="mt-1 h-4 w-4 text-green-500 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+            className="mt-1 h-4 w-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
           />
           <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
             I agree to the{' '}
-            <a onClick={()=>navigate('/privacy-policy')} className="font-medium cursor-pointer   text-green-500 hover:text-green-600 transition-colors duration-200">
+            <a onClick={()=>navigate('/privacy-policy')} className="font-medium cursor-pointer   text-purple-500 hover:text-purple-600 transition-colors duration-200">
               Terms of Service 
             </a>
             {' '}and{' '}
-            <a onClick={()=>navigate('/terms-service')} className="font-medium cursor-pointer text-green-500 hover:text-green-600 transition-colors duration-200">
+            <a onClick={()=>navigate('/terms-service')} className="font-medium cursor-pointer text-purple-500 hover:text-purple-600 transition-colors duration-200">
               Privacy Policy
             </a>
           </label>
@@ -269,7 +269,7 @@ const Register = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full  cursor-pointer flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="group relative w-full  cursor-pointer flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -298,16 +298,16 @@ const Register = () => {
           <Button
             type="button"
             onClick={() => navigate('/auth/login')}
-            className="w-full cursor-pointer flex justify-center py-3 px-4 border-2 border-green-500 text-sm font-medium rounded-lg text-green-500 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+            className="w-full cursor-pointer flex justify-center py-3 px-4 border-2 border-purple-500 text-sm font-medium rounded-lg text-purple-500 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
           >
             Sign In Instead
           </Button>
         </div>
       </form>
 
-      <div className="mt-8 p-4 bg-green-50 rounded-lg border border-green-200">
+      <div className="mt-8 p-4 bg-purple-50 rounded-lg border border-purple-200">
         <div className="text-center">
-          <p className="text-sm font-semibold text-green-600 mb-1">
+          <p className="text-sm font-semibold text-purple-600 mb-1">
             Why choose TaskAI?
           </p>
           <p className="text-xs text-gray-600">

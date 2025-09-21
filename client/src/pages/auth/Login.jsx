@@ -57,7 +57,7 @@ const handleLogin = async (e) => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-green-500" />
+                <Mail className="h-5 w-5 text-purple-500" />
               </div>
               <input
                 id="email"
@@ -66,7 +66,7 @@ const handleLogin = async (e) => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+                className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
                 placeholder="Enter your email"
               />
             </div>
@@ -78,7 +78,7 @@ const handleLogin = async (e) => {
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-green-500" />
+                <Lock className="h-5 w-5 text-purple-500" />
               </div>
               <input
                 id="password"
@@ -87,7 +87,7 @@ const handleLogin = async (e) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 transition-colors duration-200"
+                className="block w-full pl-10 pr-12 py-3 border-2 border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-0 transition-colors duration-200"
                 placeholder="Enter your password"
               />
               <button
@@ -96,9 +96,9 @@ const handleLogin = async (e) => {
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-green-500" />
+                  <EyeOff className="h-5 w-5 text-purple-500" />
                 ) : (
-                  <Eye className="h-5 w-5 text-green-500" />
+                  <Eye className="h-5 w-5 text-purple-500" />
                 )}
               </button>
             </div>
@@ -106,7 +106,7 @@ const handleLogin = async (e) => {
               <button
                 type="button"
                 onClick={() => navigate('/auth/forgot-password')}
-                className="text-sm text-green-600 hover:text-green-700 hover:underline transition-colors duration-200 cursor-pointer"
+                className="text-sm text-purple-600 hover:text-purple-700 hover:underline transition-colors duration-200 cursor-pointer"
               >
                 Forgot your password?
               </button>
@@ -118,7 +118,7 @@ const handleLogin = async (e) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full cursor-pointer flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="group relative w-full cursor-pointer flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -158,17 +158,17 @@ const handleLogin = async (e) => {
           <Button
             type="button"
             onClick={() => navigate('/auth/register')}
-            className="w-full flex  cursor-pointer justify-center py-3 px-4 border-2 border-green-500 text-sm font-medium rounded-lg text-green-500 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+            className="w-full flex  cursor-pointer justify-center py-3 px-4 border-2 border-purple-500 text-sm font-medium rounded-lg text-purple-500 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
           >
             Create New Account
           </Button>
         </div>
       </form>
 
-      <div className="mt-8 p-4 bg-green-50 rounded-lg border border-green-200">
+      <div className="mt-8 p-4 bg-purple-50 rounded-lg border border-purple-200">
         <div className="text-center">
           <p className="text-sm text-gray-700 mb-2">
-            <span className="font-semibold text-green-600">Ready to boost productivity?</span>
+            <span className="font-semibold text-purple-600">Ready to boost productivity?</span>
           </p>
           <p className="text-xs text-gray-600">
             Join thousands using AI to manage tasks smarter, not harder

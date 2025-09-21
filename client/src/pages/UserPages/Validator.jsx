@@ -132,17 +132,17 @@ export default function ProjectValidationChat() {
     console.log("Rendering validation report:", report);
 
     return (
-      <div className="mt-4 bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <div className="mt-4 bg-black rounded-lg p-4 border border-gray-700">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart size={20} className="text-cyan-400" />
+          <BarChart size={20} className="text-purple-400" />
           <h3 className="text-lg font-semibold text-white">Validation Report</h3>
         </div>
         
         <div className="space-y-4">
           {/* Project Summary */}
           {report.project_name && (
-            <div className="bg-gray-900 rounded-lg p-3">
-              <h4 className="text-cyan-400 font-medium mb-2">Project: {report.project_name}</h4>
+            <div className="bg-black rounded-lg p-3">
+              <h4 className="text-purple-400 font-medium mb-2">Project: {report.project_name}</h4>
               {report.concept_summary && (
                 <p className="text-gray-300 text-sm">{report.concept_summary}</p>
               )}
@@ -224,8 +224,8 @@ export default function ProjectValidationChat() {
           {report.success_metrics && (
             <div className="bg-gray-900 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <Target size={16} className="text-cyan-400" />
-                <span className="text-cyan-400 font-medium">Success Metrics</span>
+                <Target size={16} className="text-purple-400" />
+                <span className="text-purple-400 font-medium">Success Metrics</span>
               </div>
               {report.success_metrics.current_status && (
                 <p className="text-gray-300 text-xs">{report.success_metrics.current_status}</p>
@@ -263,7 +263,7 @@ export default function ProjectValidationChat() {
       <div className="flex flex-col max-w-4xl">
         <div className={`
           p-4 rounded-3xl text-white shadow-lg
-          ${sender === 'user' ? 'bg-cyan-700 rounded-br-none' : 'bg-gray-800 rounded-bl-none'}
+          ${sender === 'user' ? 'bg-purple-700 rounded-br-none' : 'bg-black  border-x-1 border-white'}
         `}>
           {text}
         </div>
@@ -275,11 +275,11 @@ export default function ProjectValidationChat() {
   );
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-950 text-gray-200">
+    <div className="flex flex-col h-250 w-full bg-black text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-800 shadow-lg">
+      <div className="flex items-center justify-between p-4 bg-black border-b border-gray-800 shadow-lg">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Bot size={28} className="text-cyan-500" />
+          <Bot size={28} className="text-purple-500" />
           Project Validation Assistant
           {currentValidationReport && (
             <span className="text-sm text-green-400 ml-2">
@@ -288,7 +288,7 @@ export default function ProjectValidationChat() {
           )}
         </h1>
         <button
-          className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+          className="p-2 text-white hover:text-red-500 transition-colors duration-200"
           title="Clear Chat"
           onClick={clearChat}
         >
@@ -316,7 +316,7 @@ export default function ProjectValidationChat() {
           <div className="flex justify-start animate-fadeIn">
             <div className="bg-gray-800 rounded-3xl rounded-bl-none p-4 text-white">
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-400"></div>
                 Analyzing your project...
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function ProjectValidationChat() {
       </div>
 
       {/* Input Field */}
-      <div className="p-4 bg-gray-900 border-t border-gray-800 shadow-lg">
+      <div className="p-4 bg-black border-t border-gray-800 shadow-lg">
         <div className="flex gap-4">
           <textarea
             defaultValue={refinedPrompt}
@@ -343,7 +343,7 @@ export default function ProjectValidationChat() {
             }}
             className="flex-1 p-3 rounded-xl resize-none overflow-hidden
                        bg-gray-800 border border-gray-700 text-white
-                       placeholder-gray-500 focus:ring-2 focus:ring-cyan-500
+                       placeholder-gray-500 focus:ring-2 focus:ring-purple-500
                        focus:outline-none transition-all duration-200"
             rows={1}
             placeholder="Describe your project idea or provide additional information..."
@@ -352,8 +352,8 @@ export default function ProjectValidationChat() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="p-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl 
-                       hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 
+            className="p-3 bg-gradient-to-r from-purple-500 to-red-600 text-white rounded-xl 
+                       hover:from-purple-600 hover:to-blue-700 transition-all duration-200 
                        transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
           >
             <SendHorizonal size={24} />

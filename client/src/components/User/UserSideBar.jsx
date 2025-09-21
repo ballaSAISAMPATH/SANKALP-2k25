@@ -11,6 +11,9 @@ import {
   Plus,
   CheckCircle,
   Clock,
+  GitBranch ,
+  ListChecks ,
+  PieChart ,
   MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -41,57 +44,56 @@ const UserSideBar = () => {
     }
   };
 
-  const menuItems = [
-    {
-      icon:Plus ,
-      label: 'start analysis',
-      path: '/user/home',
-      description: 'setup business environment'
-    },
-    {
-      icon:Home ,
-      label: 'business analysis',
-      path: '/user/business',
-      description: 'track the supporting'
-    },
-    {
-      icon:Home ,
-      label: 'developer',
-      path: '/user/development',
-
-      description: 'tech wing'
-    },
-    {
-      icon:Home ,
-      label: 'functional requirements',
-      path: '/user/functional',
-      description: 'analyze project flow'
-    },
-    {
-      icon: BarChart3,
-      label: 'non-functional requirements',
-      path: '/user/non-functional',
-      description: 'align business goals'
-    },
-    {
-      icon: MessageSquare,
-      label: 'validator agent',
-      path: '/user/validator',
-      description: 'Share feedback'
-    },
-    {
-      icon: MessageSquare,
-      label: 'visualization agent',
-      path: '/user/visualization',
-      description: 'Share feedback'
-    },
-    {
-      icon: User,
-      label: 'Profile',
-      path: '/user/profile',
-      description: 'Manage account'
-    }
-  ];
+const menuItems = [
+  {
+    icon: Plus,
+    label: 'start analysis',
+    path: '/user/home',
+    description: 'Setup your business environment.'
+  },
+  {
+    icon: TrendingUp,
+    label: 'business analysis agent',
+    path: '/user/business',
+    description: 'Track business metrics.'
+  },
+  {
+    icon: GitBranch,
+    label: 'developer agent',
+    path: '/user/development',
+    description: 'View the tech and development plan.'
+  },
+  {
+    icon: ListChecks,
+    label: 'functional requirements agent',
+    path: '/user/functional',
+    description: 'Break down and analyze core functionalities.'
+  },
+  {
+    icon: BarChart3,
+    label: 'non-functional requirements agent',
+    path: '/user/non-functional',
+    description: 'Align business goals with KPIs.'
+  },
+  {
+    icon: CheckCircle,
+    label: 'validator agent',
+    path: '/user/validator',
+    description: 'refine and validate your plan using AI.'
+  },
+  {
+    icon: PieChart,
+    label: 'visualization agent',
+    path: '/user/visualization',
+    description: 'visual representations.'
+  },
+  {
+    icon: User,
+    label: 'Profile',
+    path: '/user/profile',
+    description: 'Manage your personal account and settings.'
+  }
+];
 
   const isActivePath = (path) => location.pathname === path;
 
@@ -100,9 +102,9 @@ const UserSideBar = () => {
   const weeklyProgress = stats?.overallCompletionRate || 0;
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white/95 backdrop-blur-md border-r border-gray-200 z-40 flex-col justify-between">
+    <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-110 bg-black backdrop-blur-md border-r border-gray-200 z-40 flex-col justify-between">
       <div className="p-6">
-        <nav className="space-y-2">
+        <nav className="space-y-5">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = isActivePath(item.path);
@@ -113,36 +115,36 @@ const UserSideBar = () => {
                 onClick={() => navigate(item.path)}
                 className={` cursor-pointer w-full group flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-300 text-left ${
                   isActive
-                    ? 'bg-gradient-to-r from-green-500 to-[#8FE877] text-white shadow-lg shadow-green-500/25 transform scale-[1.02]'
-                    : 'text-gray-700 hover:text-green-500 hover:bg-green-500/5 hover:translate-x-1'
+                    ? 'bg-gradient-to-r from-purple-500 to-red-500 text-white shadow-lg shadow-purple-500/25 transform scale-[1.02]'
+                    : 'text-gray-700 hover:text-purple-500 hover:bg-purple-500/5 hover:translate-x-1'
                 }`}
               >
                 <div
                   className={`p-1.5 rounded-md transition-colors duration-300 ${
                     isActive
                       ? 'bg-white/20'
-                      : 'bg-gray-100 group-hover:bg-green-500/10'
+                      : 'bg-gray-100 group-hover:bg-purple-500/10'
                   }`}
                 >
                   <Icon
                     className={`w-4 h-4 transition-colors duration-300 ${
                       isActive
                         ? 'text-white'
-                        : 'text-gray-600 group-hover:text-green-500'
+                        : 'text-gray-600 group-hover:text-purple-500'
                     }`}
                   />
                 </div>
                 <div className="flex-1">
                   <div
-                    className={`font-medium text-sm ${
-                      isActive ? 'text-white' : 'text-gray-900'
+                    className={`font-bold text-md ${
+                      isActive ? 'text-white' : 'text-white'
                     }`}
                   >
                     {item.label}
                   </div>
                   <div
                     className={`text-xs ${
-                      isActive ? 'text-white/80' : 'text-gray-500'
+                      isActive ? 'text-white/80' : 'text-white'
                     }`}
                   >
                     {item.description}

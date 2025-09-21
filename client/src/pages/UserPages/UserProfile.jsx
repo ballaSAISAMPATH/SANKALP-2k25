@@ -50,16 +50,16 @@ const UserProfile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-white p-6 flex items-center justify-center">
-        <div className="text-gray-500">Loading user data...</div>
+      <div className="min-h-screen bg-black p-6 flex items-center justify-center">
+        <div className="text-white">Loading user data...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-black p-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Account Settings</h1>
+        <h1 className="text-3xl font-bold text-white">Account Settings</h1>
         <button
           onClick={handleLogout}
           disabled={isLoading}
@@ -73,39 +73,39 @@ const UserProfile = () => {
       <div className="space-y-6">
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white ">
               Username
             </label>
             <input
               type="text"
               value={user?.userName || ""}
               readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-900 text-white cursor-not-allowed"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white">
               Email Address
             </label>
             <input
               type="email"
               value={user?.email || ""}
               readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-900 text-white cursor-not-allowed"
             />
-            <p className="text-xs text-gray-500">Email address cannot be changed</p>
+            <p className="text-xs text-white">Email address cannot be changed</p>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-white">
               Sign-up Method
             </label>
             <div className="flex items-center space-x-2">
               <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full font-medium">
                 {(user?.authProvider || "email") === 'email' ? '📧 Email' : '🌐 Google'}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-white">
                 You signed up using {(user?.authProvider || "email") === 'email' ? 'email and password' : 'Google authentication'}
               </span>
             </div>
@@ -131,7 +131,7 @@ const UserProfile = () => {
               <label className="block text-sm font-medium text-red-700">
                 Danger Zone
               </label>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-white mb-4">
                 Once you delete your account, there is no going back. Please be certain.
               </p>
               <button

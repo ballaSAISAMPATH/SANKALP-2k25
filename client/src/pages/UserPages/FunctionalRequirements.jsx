@@ -128,7 +128,7 @@ const FunctionalRequirements = () => {
       return (
         <ul className="list-disc pl-4 space-y-1">
           {value.map((item, index) => (
-            <li key={index} className="text-sm">
+            <li key={index} className="text-sm text-white">
               {typeof item === 'string' ? item : JSON.stringify(item)}
             </li>
           ))}
@@ -140,7 +140,7 @@ const FunctionalRequirements = () => {
           {Object.entries(value).map(([subKey, subValue]) => (
             <div key={subKey}>
               <h4 className="font-medium text-sm capitalize">{subKey.replace(/_/g, ' ')}</h4>
-              <div className="ml-2 text-sm text-gray-600">
+              <div className="ml-2 text-sm text-white">
                 {renderValue(subValue)}
               </div>
             </div>
@@ -148,16 +148,16 @@ const FunctionalRequirements = () => {
         </div>
       );
     }
-    return <p className="text-sm">{value}</p>;
+    return <p className="text-sm text-white">{value}</p>;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="bg-white border-b p-4">
+      <div className="bg-black border-b p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div>
-            <h1 className="text-xl font-bold text-blue-600">Functional Requirements Analyzer</h1>
+            <h1 className="text-xl font-bold text-purple-600">Functional Requirements Analyzer</h1>
             {reduxFunctionalReqs && (
               <p className="text-sm text-green-600 mt-1">
                 ✓ Requirements loaded from previous session
@@ -167,21 +167,21 @@ const FunctionalRequirements = () => {
           <button
             onClick={resetConversation}
             disabled={isLoading}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex text-white border-1 border-white mt-2 items-center gap-2 px-3 py-2 bg-black hover:bg-black rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 text-white ${isLoading ? 'animate-spin' : ''}`} />
             Reset
           </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-full mx-auto p-4">
         {/* Tabs */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setActiveTab('chat')}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'chat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
+              activeTab === 'chat' ? 'bg-purple-600 text-white' : 'bg-black text-white'
             }`}
           >
             Chat {reduxMessages && reduxMessages.length > 0 && (
@@ -193,10 +193,10 @@ const FunctionalRequirements = () => {
             disabled={!reduxFunctionalReqs}
             className={`px-4 py-2 rounded text-sm font-medium ${
               activeTab === 'requirements' && reduxFunctionalReqs
-                ? 'bg-blue-600 text-white'
+                ? 'bg-purple-600 text-white'
                 : reduxFunctionalReqs
-                ? 'bg-white text-gray-600'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-black text-white'
+                : 'bg-black text-white cursor-not-allowed'
             }`}
           >
             Requirements {reduxFunctionalReqs && <span className="ml-1 text-xs">✓</span>}
@@ -206,15 +206,15 @@ const FunctionalRequirements = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Chat Section */}
           <div className={`${activeTab !== 'chat' ? 'hidden lg:block' : ''}`}>
-            <div className="bg-white rounded-lg border h-96 flex flex-col">
+            <div className="bg-black rounded-lg border-1 border-white h-200 flex flex-col">
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {(!reduxMessages || reduxMessages.length === 0) ? (
-                  <div className="text-center text-gray-500 mt-16">
-                    <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Describe your project to generate functional requirements</p>
+                  <div className="text-center text-white mt-16">
+                    <FileText className="h-12 w-12 mx-auto mb-2 text-white" />
+                    <p >Describe your project to generate functional requirements</p>
                     {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
-                      <p className="text-xs text-blue-600 mt-2">
+                      <p className="text-xs text-purple-600 mt-2">
                         Initial prompt available: {refinedPrompt.substring(0, 50)}...
                       </p>
                     )}
@@ -228,10 +228,10 @@ const FunctionalRequirements = () => {
                       <div
                         className={`max-w-xs rounded-lg px-3 py-2 text-sm ${
                           message.role === 'user'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-purple-600 text-white'
                             : message.isError
                             ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-gray-900'
+                            : 'bg-gray-100 text-white'
                         }`}
                       >
                         {message.content}
@@ -243,14 +243,14 @@ const FunctionalRequirements = () => {
                 {/* Loading indicator */}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="max-w-xs rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-900">
+                    <div className="max-w-xs rounded-lg px-3 py-2 text-sm bg-gray-100 text-white">
                       <div className="flex items-center gap-1">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                         </div>
-                        <span className="ml-2 text-gray-500">Analyzing...</span>
+                        <span className="ml-2 text-white">Analyzing...</span>
                       </div>
                     </div>
                   </div>
@@ -260,20 +260,20 @@ const FunctionalRequirements = () => {
 
               {/* Input */}
               <div className="border-t p-4">
-                <div className="flex gap-2">
+                <div className="flex gap-2 border-1 border-purple-500 text-white">
                   <input
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your project..."
-                    className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
                     disabled={isLoading}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center min-w-16"
+                    className="px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center min-w-16"
                   >
                     {isLoading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -285,7 +285,7 @@ const FunctionalRequirements = () => {
                 {refinedPrompt && refinedPrompt !== 'geyhetewery' && !inputMessage && (
                   <button 
                     onClick={() => setInputMessage(refinedPrompt)}
-                    className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                    className="mt-2 text-xs text-purple-600 hover:text-purple-800 underline"
                   >
                     Use initial prompt: {refinedPrompt.substring(0, 30)}...
                   </button>
@@ -296,11 +296,11 @@ const FunctionalRequirements = () => {
 
           {/* Requirements Section */}
           <div className={`${activeTab !== 'requirements' ? 'hidden lg:block' : ''}`}>
-            <div className="bg-white rounded-lg border">
+            <div className="bg-black rounded-lg border-1 border-white">
               {reduxFunctionalReqs ? (
-                <div className="h-96 overflow-y-auto p-4 space-y-4">
+                <div className="h-200 overflow-y-auto p-4 space-y-4">
                   <div className="flex items-center justify-between border-b pb-2">
-                    <h2 className="text-lg font-bold text-gray-900">
+                    <h2 className="text-lg font-bold text-white">
                       Functional Requirements
                     </h2>
                     <span className="text-xs text-green-600">✓ Persisted</span>
@@ -310,8 +310,8 @@ const FunctionalRequirements = () => {
                     if (!value || (Array.isArray(value) && value.length === 0)) return null;
                     
                     return (
-                      <div key={key} className="border-l-2 border-blue-200 pl-3">
-                        <h3 className="font-semibold text-gray-800 mb-2 capitalize">
+                      <div key={key} className="border-l-2 border-purple-200 pl-3">
+                        <h3 className="font-semibold text-white mb-2 capitalize">
                           {key.replace(/_/g, ' ')}
                         </h3>
                         {renderValue(value)}
@@ -321,21 +321,21 @@ const FunctionalRequirements = () => {
 
                   {/* Debug info */}
                   <details className="mt-4 text-xs">
-                    <summary className="cursor-pointer text-gray-500">Debug Info</summary>
+                    <summary className="cursor-pointer text-white">Debug Info</summary>
                     <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto">
                       {JSON.stringify(reduxFunctionalReqs, null, 2)}
                     </pre>
                   </details>
                 </div>
               ) : (
-                <div className="h-96 flex items-center justify-center text-gray-500">
+                <div className="h-200 flex items-center justify-center text-white">
                   <div className="text-center">
-                    <FileText className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                    <FileText className="h-12 w-12 mx-auto mb-2 text-white" />
                     <p>No requirements generated yet</p>
                     {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
                       <button 
                         onClick={() => setInputMessage(refinedPrompt)}
-                        className="mt-4 px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+                        className="mt-4 px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-colors"
                       >
                         Use Initial Prompt
                       </button>

@@ -153,18 +153,18 @@ const NonFunctionalReq = () => {
       <div className="space-y-1">
         {Array.isArray(metrics) ? (
           metrics.map((metric, index) => (
-            <div key={index} className="text-sm bg-blue-50 px-2 py-1 rounded">
+            <div key={index} className="text-sm text-white bg-black px-2 py-1 rounded">
               {metric}
             </div>
           ))
         ) : typeof metrics === 'object' ? (
           Object.entries(metrics).map(([key, value]) => (
-            <div key={key} className="text-sm bg-blue-50 px-2 py-1 rounded">
+            <div key={key} className="text-sm bg-black text-white px-2 py-1 rounded">
               <span className="font-medium">{key}:</span> {value}
             </div>
           ))
         ) : (
-          <div className="text-sm bg-blue-50 px-2 py-1 rounded">{metrics}</div>
+          <div className="text-sm bg-black px-2 py-1 rounded">{metrics}</div>
         )}
       </div>
     );
@@ -177,11 +177,11 @@ const NonFunctionalReq = () => {
     const title = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
     return (
-      <div key={category} className="bg-white border rounded-lg p-4 space-y-3">
+      <div key={category} className="bg-black border rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-purple-600" />
-            <h3 className="font-semibold text-gray-900">{title}</h3>
+            <h3 className="font-semibold text-white">{title}</h3>
           </div>
           {requirement.priority_level && (
             <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(requirement.priority_level)}`}>
@@ -192,15 +192,15 @@ const NonFunctionalReq = () => {
 
         {requirement.specific_metrics && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Metrics</h4>
+            <h4 className="text-sm font-medium text-white mb-1">Metrics</h4>
             {renderMetrics(requirement.specific_metrics)}
           </div>
         )}
 
         {requirement.testing_criteria && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Testing Criteria</h4>
-            <div className="text-sm text-gray-600">
+            <h4 className="text-sm font-medium text-white mb-1">Testing Criteria</h4>
+            <div className="text-sm text-white">
               {Array.isArray(requirement.testing_criteria) 
                 ? requirement.testing_criteria.join(', ')
                 : requirement.testing_criteria}
@@ -210,8 +210,8 @@ const NonFunctionalReq = () => {
 
         {requirement.constraints && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-1">Constraints</h4>
-            <div className="text-sm text-gray-600">
+            <h4 className="text-sm font-medium text-white mb-1">Constraints</h4>
+            <div className="text-sm text-white">
               {Array.isArray(requirement.constraints)
                 ? requirement.constraints.join(', ')
                 : requirement.constraints}
@@ -223,9 +223,9 @@ const NonFunctionalReq = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="bg-white border-b p-4">
+      <div className="bg-black border-b p-4">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-3">
             <Shield className="h-6 w-6 text-purple-600" />
@@ -241,7 +241,7 @@ const NonFunctionalReq = () => {
           <button
             onClick={resetConversation}
             disabled={isLoading}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-2 bg-black hover:bg-black rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Reset
@@ -249,13 +249,13 @@ const NonFunctionalReq = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-full mx-auto p-4">
         {/* Tabs */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setActiveTab('chat')}
             className={`px-4 py-2 rounded text-sm font-medium ${
-              activeTab === 'chat' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600'
+              activeTab === 'chat' ? 'bg-purple-600 text-white' : 'bg-black text-white'
             }`}
           >
             Chat {reduxMessages && reduxMessages.length > 0 && (
@@ -269,8 +269,8 @@ const NonFunctionalReq = () => {
               activeTab === 'requirements' && reduxNonFunctionalReqs
                 ? 'bg-purple-600 text-white'
                 : reduxNonFunctionalReqs
-                ? 'bg-white text-gray-600'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-black text-white'
+                : 'bg-black text-gray-400 cursor-not-allowed'
             }`}
           >
             NFR Analysis {reduxNonFunctionalReqs && <span className="ml-1 text-xs">✓</span>}
@@ -280,14 +280,14 @@ const NonFunctionalReq = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Chat Section */}
           <div className={`${activeTab !== 'chat' ? 'hidden lg:block' : ''}`}>
-            <div className="bg-white rounded-lg border h-96 flex flex-col">
+            <div className="bg-black rounded-lg  border-1 border-white h-200 flex flex-col">
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {(!reduxMessages || reduxMessages.length === 0) ? (
-                  <div className="text-center text-gray-500 mt-16">
-                    <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p className="mb-2">Analyze Non-Functional Requirements</p>
-                    <p className="text-xs text-gray-400">Performance • Security • Scalability • Reliability</p>
+                  <div className="text-center text-white mt-16">
+                    <Shield className="h-12 w-12 mx-auto mb-2 text-white" />
+                    <p className="mb-2 text-white">Analyze Non-Functional Requirements</p>
+                    <p className="text-xs text-white">Performance • Security • Scalability • Reliability</p>
                     {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
                       <p className="text-xs text-purple-600 mt-2">
                         Initial prompt available: {refinedPrompt.substring(0, 50)}...
@@ -306,7 +306,7 @@ const NonFunctionalReq = () => {
                             ? 'bg-purple-600 text-white'
                             : message.isError
                             ? 'bg-red-100 text-red-700'
-                            : 'bg-gray-100 text-gray-900'
+                            : 'bg-black text-white'
                         }`}
                       >
                         {message.content}
@@ -318,14 +318,14 @@ const NonFunctionalReq = () => {
                 {/* Loading indicator */}
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="max-w-xs rounded-lg px-3 py-2 text-sm bg-gray-100 text-gray-900">
+                    <div className="max-w-xs rounded-lg px-3 py-2 text-sm bg-black text-white">
                       <div className="flex items-center gap-1">
                         <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-2 h-2 bg-black rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                         </div>
-                        <span className="ml-2 text-gray-500">Analyzing NFRs...</span>
+                        <span className="ml-2 text-white">Analyzing NFRs...</span>
                       </div>
                     </div>
                   </div>
@@ -343,13 +343,13 @@ const NonFunctionalReq = () => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Describe your system's quality requirements..."
-                    className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
+                    className="flex-1 rounded px-3 py-2 text-white border-1 border-purple-500 text-sm focus:outline-none focus:border-purple-500"
                     disabled={isLoading}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center min-w-16"
+                    className="px-4 py-2 bg-purple-600 text-white rounded text-sm hover:bg-purple-700 disabled:bg-black disabled:cursor-not-allowed flex items-center justify-center min-w-16"
                   >
                     {isLoading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -372,11 +372,11 @@ const NonFunctionalReq = () => {
 
           {/* Requirements Section */}
           <div className={`${activeTab !== 'requirements' ? 'hidden lg:block' : ''}`}>
-            <div className="bg-white rounded-lg border">
+            <div className="bg-black rounded-lg border-1 border-white">
               {reduxNonFunctionalReqs ? (
-                <div className="h-96 overflow-y-auto p-4 space-y-4">
+                <div className="h-200 overflow-y-auto p-4 space-y-4">
                   <div className="flex items-center justify-between border-b pb-2">
-                    <h2 className="text-lg font-bold text-gray-900">
+                    <h2 className="text-lg font-bold text-white">
                       Non-Functional Requirements
                     </h2>
                     <span className="text-xs text-green-600">✓ Persisted</span>
@@ -388,18 +388,18 @@ const NonFunctionalReq = () => {
 
                   {/* Debug info */}
                   <details className="mt-4 text-xs">
-                    <summary className="cursor-pointer text-gray-500">Debug Info</summary>
-                    <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto">
+                    <summary className="cursor-pointer text-white">Debug Info</summary>
+                    <pre className="mt-2 p-2 bg-black rounded text-xs overflow-auto">
                       {JSON.stringify(reduxNonFunctionalReqs, null, 2)}
                     </pre>
                   </details>
                 </div>
               ) : (
-                <div className="h-96 flex items-center justify-center text-gray-500">
+                <div className="h-200 flex items-center justify-center text-gray-500">
                   <div className="text-center">
-                    <Shield className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>No NFR analysis generated yet</p>
-                    <p className="text-xs text-gray-400 mt-1">Quality attributes will appear here</p>
+                    <Shield className="h-12 w-12 mx-auto mb-2 text-white" />
+                    <p className='text-white'>No NFR analysis generated yet</p>
+                    <p className="text-xs text-white mt-1">Quality attributes will appear here</p>
                     {refinedPrompt && refinedPrompt !== 'geyhetewery' && (
                       <button 
                         onClick={() => setInputMessage(refinedPrompt)}

@@ -85,7 +85,7 @@ export default function UserHome() {
       <div className="flex flex-col max-w-md">
         <div className={`
           p-4 rounded-3xl text-white shadow-lg
-          ${sender === 'user' ? 'bg-cyan-700 rounded-br-none' : 'bg-gray-800 rounded-bl-none'}
+          ${sender === 'user' ? 'bg-purple-700 rounded-br-none' : 'border-x-1 border-white '}
         `}>
           {text}
         </div>
@@ -112,11 +112,11 @@ export default function UserHome() {
   );
 
   return (
-    <div className="flex flex-col h-223 w-full bg-gray-950 text-gray-200">
+    <div className="flex flex-col h-250 w-full bg-black text-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-800 shadow-lg min-h-0">
+      <div className="flex items-center justify-between p-4 bg-black border-b border-gray-800 shadow-lg min-h-0">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Bot size={28} className="text-cyan-500" />
+          <Bot size={28} className="text-purple-500" />
           AI Chat
         </h1>
         <button
@@ -148,7 +148,7 @@ export default function UserHome() {
       </div>
 
       {/* Input Field */}
-      <div className="p-4 bg-gray-900 border-t border-gray-800 shadow-lg min-h-0">
+      <div className="p-4 bg-black border-t border-gray-800 shadow-lg min-h-0">
         <form className="flex gap-4" onSubmit={chatFormSubmitted}>
           <textarea
             onInput={(e) => {
@@ -157,15 +157,15 @@ export default function UserHome() {
             }}
             className="flex-1 p-3 rounded-xl resize-none overflow-hidden
                        bg-gray-800 border border-gray-700 text-white
-                       placeholder-gray-500 focus:ring-2 focus:ring-cyan-500
+                       placeholder-gray-500 focus:ring-2 focus:ring-purple-500
                        focus:outline-none transition-all duration-200"
             rows={1}
             placeholder="Send a message..."
           />
           <button
             type="submit"
-            className="p-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl 
-                       hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 
+            className="p-3 bg-gradient-to-r from-purple-500 to-red-600 text-white rounded-xl 
+                       hover:from-purple-600 hover:to-red-700 transition-all duration-200 
                        transform hover:scale-105"
           >
             <SendHorizonal size={24} />

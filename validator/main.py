@@ -23,7 +23,6 @@ app.add_middleware(
 # Configure Gemini AI
 genai.configure(api_key="AIzaSyAnOE0X5v0mkgly9du6M0V0-7ibOF6Y5Vs")  # Replace with your actual API key
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
-
 # Single global conversation (resets when server restarts)
 conversation_history: List[Dict[str, str]] = []
 current_validation_report: Optional[Dict[str, Any]] = None

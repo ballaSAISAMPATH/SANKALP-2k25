@@ -31,7 +31,7 @@ const TermsOfService = () => {
           <p className="text-gray-600 text-lg">Last Updated: July 26, 2025</p>
           <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
             <p className="text-green-800 font-semibold text-lg">
-              By using our AI Task Flow application, you agree to abide by these terms.
+              By using our NexGent application, you agree to abide by these terms.
             </p>
           </div>
         </div>
@@ -162,7 +162,7 @@ const TermsOfService = () => {
               href="mailto:praveengamini009@gmail.com" 
               className="text-green-600 hover:text-green-800 underline font-semibold"
             >
-              praveengamini009@gmail.com
+              nexgent@gmail.com
             </a>
           </p>
         </div>
@@ -170,7 +170,7 @@ const TermsOfService = () => {
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-200 text-center">
           <p className="text-gray-500 text-sm">
-            © 2025 AI Task Flow. All rights reserved.
+            © 2025 NexGent. All rights reserved.
           </p>
         </div>
       </div>

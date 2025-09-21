@@ -46,131 +46,92 @@ def extract_text(response) -> str:
     else:
         return ""
 
+# The rest of your FastAPI code goes here...
+# ... (imports, app setup, etc.) ...
+
 def generate_initial_functional_requirements(project_description: str) -> tuple[Dict[str, Any], str]:
-    """Generate initial functional requirements from project description"""
+    """Generate initial functional requirements from project description with retries."""
     
     system_prompt = """You are an expert business analyst and requirements engineer. When given a project description, generate comprehensive functional requirements in JSON format.
-
-Include these sections ONLY if relevant to the project:
-- project_overview: Brief summary and scope
-- stakeholders: Primary users, secondary users, administrators, external systems
-- user_stories: Organized by user role with acceptance criteria
-- core_functions: Main system capabilities and business logic
-- user_interface_requirements: UI/UX requirements, workflows, navigation
-- data_requirements: Data entities, validation rules, storage needs
-- integration_requirements: External APIs, third-party services, data exchanges
-- business_rules: Validation rules, constraints, calculations
-- reporting_requirements: Reports, analytics, dashboards needed
-- security_requirements: Authentication, authorization, data protection
-- performance_requirements: Response times, throughput, scalability needs
-- compliance_requirements: Regulatory, legal, industry standards
-
-For user stories, use format:
-- As a [user type], I want [goal] so that [benefit]
-- Acceptance criteria as bullet points
-
-Be intelligent about what's needed based on the project type. Don't include irrelevant sections.
-
-Respond with:
-1. A valid JSON functional requirements document
-2. A brief explanation message
-
-Format your response as:
-FUNCTIONAL_REQUIREMENTS: {json here}
-MESSAGE: Your explanation here"""
-
+    ... (rest of your system prompt) ...
+    """
     prompt = f"Analyze this project and create comprehensive functional requirements: {project_description}"
     
-    try:
-        response = model.generate_content(f"{system_prompt}\n\n{prompt}")
-        response_text = extract_text(response)
-        
-        # Parse the response
-        if "FUNCTIONAL_REQUIREMENTS:" in response_text and "MESSAGE:" in response_text:
-            parts = response_text.split("MESSAGE:")
-            json_part = parts[0].replace("FUNCTIONAL_REQUIREMENTS:", "").strip()
-            message_part = parts[1].strip()
-        else:
-            # Try to extract JSON from response
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(f"{system_prompt}\n\n{prompt}")
+            response_text = extract_text(response)
+            
+            # Use regex to find the most likely JSON object
             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 json_part = json_match.group()
-                message_part = "Functional requirements generated successfully!"
             else:
-                raise ValueError("Could not parse response")
-        
-        # Clean JSON
-        if json_part.startswith("```json"):
-            json_part = json_part[7:-3]
-        elif json_part.startswith("```"):
-            json_part = json_part[3:-3]
-        
-        functional_requirements = json.loads(json_part)
-        return functional_requirements, message_part
-        
-    except Exception as e:
-        logging.error(f"Error generating initial requirements: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate functional requirements: {str(e)}")
+                raise ValueError("Could not find a JSON object in the response.")
+            
+            # Clean JSON
+            json_part = json_part.replace("```json", "").replace("```", "").strip()
+            
+            # Attempt to parse
+            functional_requirements = json.loads(json_part)
+            
+            # Extract the message if it exists
+            message_part = "Functional requirements generated successfully."
+            if "MESSAGE:" in response_text:
+                message_part = response_text.split("MESSAGE:", 1)[1].strip()
+            
+            return functional_requirements, message_part
+            
+        except json.JSONDecodeError as e:
+            logging.warning(f"Attempt {attempt + 1}/{max_retries}: Failed to decode JSON. Retrying... Error: {e}")
+            # Modify the prompt for the next attempt to "fix" the JSON
+            prompt = f"The previous JSON was malformed. Please fix it and return a valid JSON object. Here is the malformed JSON:\n{json_part}"
+            if attempt == max_retries - 1:
+                logging.error("Max retries exceeded for JSON generation.")
+                raise HTTPException(status_code=500, detail=f"Failed to generate valid functional requirements after {max_retries} attempts. Error: {str(e)}")
+        except Exception as e:
+            logging.error(f"An unexpected error occurred: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to generate functional requirements: {str(e)}")
 
+# Apply a similar retry logic to the update_functional_requirements function
 def update_functional_requirements(message: str) -> tuple[Dict[str, Any], str]:
-    """Update existing functional requirements based on user message and conversation history"""
+    # ... (rest of your system prompt) ...
     
-    system_prompt = """You are an expert business analyst and requirements engineer. Based on the conversation history and current functional requirements, update the requirements according to the user's new input.
-
-Intelligently modify the existing requirements:
-- If they add new features, create new user stories and update related sections
-- If they change business rules, update validation and business logic
-- If they modify user roles, update stakeholders and user stories
-- If they add integrations, update integration requirements
-- If they change data needs, update data requirements
-- Update acceptance criteria, performance needs, security accordingly
-- Be smart about cascading changes across all sections
-
-Return the complete updated functional requirements in the same JSON format, plus a brief message explaining what changed.
-
-Format your response as:
-FUNCTIONAL_REQUIREMENTS: {updated json here}
-MESSAGE: Brief explanation of changes made"""
-
-    # Build context
-    context = "CURRENT FUNCTIONAL REQUIREMENTS:\n" + json.dumps(current_functional_requirements, indent=2) + "\n\n"
-    context += "CONVERSATION HISTORY:\n"
-    for msg in conversation_history[-6:]:  # Last 6 messages for context
-        context += f"{msg['role'].title()}: {msg['content']}\n"
-    
-    prompt = f"{context}\nUser: {message}\n\nUpdate the functional requirements based on this new input."
-    
-    try:
-        response = model.generate_content(f"{system_prompt}\n\n{prompt}")
-        response_text = extract_text(response)
-        
-        # Parse the response
-        if "FUNCTIONAL_REQUIREMENTS:" in response_text and "MESSAGE:" in response_text:
-            parts = response_text.split("MESSAGE:")
-            json_part = parts[0].replace("FUNCTIONAL_REQUIREMENTS:", "").strip()
-            message_part = parts[1].strip()
-        else:
-            # Try to extract JSON from response
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # The core logic for generating the update prompt
+            # ...
+            response = model.generate_content(f"{system_prompt}\n\n{prompt}")
+            response_text = extract_text(response)
+            
+            # Use regex to find the most likely JSON object
             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 json_part = json_match.group()
-                message_part = "Functional requirements updated successfully!"
             else:
-                raise ValueError("Could not parse response")
-        
-        # Clean JSON
-        if json_part.startswith("```json"):
-            json_part = json_part[7:-3]
-        elif json_part.startswith("```"):
-            json_part = json_part[3:-3]
-        
-        updated_requirements = json.loads(json_part)
-        return updated_requirements, message_part
-        
-    except Exception as e:
-        logging.error(f"Error updating requirements: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to update functional requirements: {str(e)}")
+                raise ValueError("Could not find a JSON object in the response.")
 
+            json_part = json_part.replace("```json", "").replace("```", "").strip()
+            
+            updated_requirements = json.loads(json_part)
+            
+            message_part = "Functional requirements updated successfully."
+            if "MESSAGE:" in response_text:
+                message_part = response_text.split("MESSAGE:", 1)[1].strip()
+            
+            return updated_requirements, message_part
+            
+        except json.JSONDecodeError as e:
+            logging.warning(f"Attempt {attempt + 1}/{max_retries}: Failed to decode JSON. Retrying... Error: {e}")
+            prompt = f"The previous JSON was malformed. Please fix the syntax and return a valid JSON object. Here is the malformed JSON:\n{json_part}"
+            if attempt == max_retries - 1:
+                logging.error("Max retries exceeded for JSON update.")
+                raise HTTPException(status_code=500, detail=f"Failed to update functional requirements after {max_retries} attempts. Error: {str(e)}")
+        except Exception as e:
+            logging.error(f"An unexpected error occurred: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to update functional requirements: {str(e)}")
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Single endpoint for both initial requirements analysis and modifications"""
