@@ -20,11 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
 # Configure Gemini API
-genai.configure(api_key="AIzaSyAnOE0X5v0mkgly9du6M0V0-7ibOF6Y5Vs")
+genai.configure(api_key="AIzaSyCLiOhF71E9ll0TAmuX_PTu8nkk_c7iY9o")
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 # Single global conversation history
