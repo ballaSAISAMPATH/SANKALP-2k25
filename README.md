@@ -89,3 +89,48 @@ To run this project, you will need to add the following environment variables to
 - Data-driven visualizations of ROI, growth trajectories, and long-term metrics
 - Advanced multi-modal reasoning and agentic coordination
 
+
+## 🚀 About Me
+I'm a full stack developer...
+
+## Installation
+
+### Frontend (React + Vite)
+1. Clone the repository:
+git clone <https://github.com/ballaSAISAMPATH/SANKALP-2k25.git>
+cd <client>
+
+2. Install dependencies and run:
+```
+npm install
+npm run dev
+```
+### Backend (Node.js Server)
+1. Navigate to the backend folder:
+```
+cd <server>
+```
+2. Install dependencies:
+```
+npm install
+```
+3. Start the server:
+```
+npm run start
+```
+> Make sure your `.env` file is configured with `MONGO_URI`, `CLIENT_ORIGIN`, and other necessary environment variables.
+
+### Python Backend (Optional)
+1. Create and activate virtual environment:
+```
+python -m venv venv
+source venv/Scripts/activate  # Windows: venv\Scripts\activate
+```
+2. Install dependencies:
+```
+pip install -r requirements.txt
+```
+3. Run server:
+```
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
