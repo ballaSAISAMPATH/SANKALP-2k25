@@ -134,3 +134,26 @@ pip install -r requirements.txt
 ```
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+## License
+
+[self](https://choosealicense.com/licenses/mit/)
+
+
+## Tech Stack
+
+**Client:** React, Redux, TailwindCSS
+
+**Server:** Node, Express
+
+**Database:** MongoDb
+
+**AI:** Agentic Langchain
+
+
+
+## Used By
+
+This project is used by the following companies:
+
+- Sankalp - 2025
+
