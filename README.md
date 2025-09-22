@@ -90,9 +90,6 @@ To run this project, you will need to add the following environment variables to
 - Advanced multi-modal reasoning and agentic coordination
 
 
-## 🚀 About Me
-I'm a full stack developer...
-
 ## Installation
 
 ### Frontend (React + Vite)
